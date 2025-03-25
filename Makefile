@@ -37,3 +37,6 @@ deploy-basic-nft:
 
 deploy-basic-nft-sepolia:
 	@forge script script/DeployBasicNft.s.sol:DeployBasicNft --rpc-url $(SEPOLIA_RPC_URL) --account $(ACCOUNT) --sender $(SENDER) --etherscan-api-key $(ETHERSCAN_API_KEY) --broadcast --verify
+
+mint-basic-nft:
+	@forge script script/Interactions.s.sol:MintBasicNft --rpc-url http://localhost:8545 $(NETWORK_ARGS)
