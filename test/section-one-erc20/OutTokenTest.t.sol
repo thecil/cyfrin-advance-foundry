@@ -2,8 +2,8 @@
 pragma solidity ^0.8.20;
 import {Test} from "forge-std/Test.sol";
 
-import {OurToken} from "../../src/session1/OurToken.sol";
-import {DeployOurToken} from "../../script/session1/DeployOurToken.s.sol";
+import {OurToken} from "../../src/section-one-erc20/OurToken.sol";
+import {DeployOurToken} from "../../script/section-one-erc20/DeployOurToken.s.sol";
 
 contract OurTokenTest is Test {
     OurToken public ourToken;
