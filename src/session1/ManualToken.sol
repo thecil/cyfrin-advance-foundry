@@ -25,6 +25,7 @@ contract ManualToken {
 
     function totalSupply() public pure returns (uint256) {
         return 100 ether;
+        
     }
     function balanceOf(address _owner) public view returns (uint256 balance) {
         return balances[_owner];
