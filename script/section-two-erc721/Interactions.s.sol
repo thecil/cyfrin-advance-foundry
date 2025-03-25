@@ -8,14 +8,15 @@ import {DevOpsTools} from "../../lib/foundry-devops/src/DevOpsTools.sol";
 contract MintBasicNft is Script {
     uint256 constant INITIAL_SUPPLY = 100 ether;
 
-    function run() external returns (BasicNft) {
+    function run() external {
         address _mostRecentDeployment = DevOpsTools.get_most_recent_deployment(
             "BasicNft",
-            block.chainId
+            block.chainid
         );
+        mintNftOnContract(_mostRecentDeployment);
     }
 
-    function mintNftOnContract(address _contractAddress) external {
+    function mintNftOnContract(address _contractAddress) public {
         vm.startBroadcast();
         BasicNft(_contractAddress).mintNft();
         vm.stopBroadcast();
