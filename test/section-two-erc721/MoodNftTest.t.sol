@@ -23,7 +23,7 @@ contract MoodNftTest is Test {
 
     function expectedTokenUri(
         string memory imageUri
-    ) internal returns (string memory) {
+    ) internal view returns (string memory) {
         return
             string(
                 abi.encodePacked(
