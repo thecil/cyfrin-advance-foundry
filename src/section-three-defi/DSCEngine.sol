@@ -34,11 +34,16 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__NotAllowedCollateral();
     error DSCEngine__CollateralTokensAddressesAndPriceFeedsMustMatchLength();
     error DSCEngine__TransferFailed();
+    error DSCEngine__HealthFactorTooLow(uint256 healthFactor);
     //////////////////////////
     //   State Variables   //
     /////////////////////////
     uint256 private constant ADDITIONAL_FEED_PRECISION = 1e10;
     uint256 private constant PRECISION = 1e18;
+    uint256 private constant LIQUIDATION_THRESHOLD = 50;
+    uint256 private constant LIQUIDATION_PRECISION = 100;
+    uint256 private constant MIN_HEALTH_FACTOR = 1;
+
     mapping(address token => address priceFeed) private s_priceFeeds; // tokenToPriceFeed
     mapping(address user => mapping(address token => uint256 amount))
         private s_collateralDeposited; // userToCollateralDeposited
@@ -150,6 +155,7 @@ contract DSCEngine is ReentrancyGuard {
         uint256 _dscAmount
     ) external moreThanZero(_dscAmount) nonReentrant {
         s_dscMinted[msg.sender] += _dscAmount;
+        _revertIfHealthFactorIsTooLow(msg.sender);
         emit DscMinted(msg.sender, _dscAmount);
         // 1. Mint the DSC token to the user
         // 2. Update the DSC balance for the user
@@ -202,22 +208,26 @@ contract DSCEngine is ReentrancyGuard {
         collateralValueInUsd = getAccountCollateralValueInUsd(_user);
         totalDscMinted = s_dscMinted[_user];
     }
+
     /**
      * @notice This function calculates the health factor for a user.
      * @param _user The address of the user to calculate the health factor for.
      */
     function _healthFactor(address _user) internal view returns (uint256) {
-        // 1. Get the collateral value in USD
-        // 2. Get the DSC value in USD
-        // 3. Calculate the health factor
+        (
+            uint256 totalDscMinted,
+            uint256 collateralValueInUsd
+        ) = _getAccountInformation(_user);
+        uint256 collateralAdjustedForThreshold = (collateralValueInUsd *
+            LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
+        return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
     }
-    function revertIfHealthFactorIsTooLow(
-        address _user,
-        uint256 _collateralAmount,
-        uint256 _dscAmount
-    ) internal view {
-        // 1. Get the health factor for the user
-        // 2. Revert if the health factor is too low
+
+    function _revertIfHealthFactorIsTooLow(address _user) internal view {
+        uint256 userHealthFactor = _healthFactor(_user);
+        if (userHealthFactor < MIN_HEALTH_FACTOR) {
+            revert DSCEngine__HealthFactorTooLow(userHealthFactor);
+        }
     }
 
     ///////////////////////////////////////////
