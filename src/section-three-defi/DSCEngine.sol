@@ -35,6 +35,8 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__CollateralTokensAddressesAndPriceFeedsMustMatchLength();
     error DSCEngine__TransferFailed();
     error DSCEngine__HealthFactorTooLow(uint256 healthFactor);
+    error DSCEngine__MintedFailed();
+
     //////////////////////////
     //   State Variables   //
     /////////////////////////
@@ -156,6 +158,10 @@ contract DSCEngine is ReentrancyGuard {
     ) external moreThanZero(_dscAmount) nonReentrant {
         s_dscMinted[msg.sender] += _dscAmount;
         _revertIfHealthFactorIsTooLow(msg.sender);
+        bool minted = i_dsc.mint(msg.sender, _dscAmount);
+        if (!minted) {
+            revert DSCEngine__MintedFailed();
+        }
         emit DscMinted(msg.sender, _dscAmount);
         // 1. Mint the DSC token to the user
         // 2. Update the DSC balance for the user
