@@ -63,7 +63,11 @@ contract DSCEngine is ReentrancyGuard {
         uint256 amount
     );
     event DscMinted(address indexed user, uint256 amount);
-
+    event CollateralRedeemed(
+        address indexed user,
+        address indexed collateralToken,
+        uint256 amount
+    );
     ////////////////////
     //   Modifiers   //
     ///////////////////
@@ -131,22 +135,39 @@ contract DSCEngine is ReentrancyGuard {
         }
     }
 
+    /**
+     * @notice This function allows a user to deposit collateral and mint DSC tokens in one transaction.
+     * @param _collateralToken The address of the collateral token to deposit.
+     * @param _collateralAmount The amount of collateral to deposit.
+     * @param _dscAmountToMint The amount of DSC tokens to mint.
+     */
     function depositCollateralAndMintDsc(
         address _collateralToken,
         uint256 _collateralAmount,
-        uint256 _dscAmount
+        uint256 _dscAmountToMint
     ) external {
-        // 1. Transfer the collateral token from the user to this contract
-        // 2. Mint the DSC token to the user
-        // 3. Update the collateral and DSC balances for the user
+        depositCollateral(_collateralToken, _collateralAmount);
+        mintDsc(_dscAmountToMint);
     }
 
     function redeemCollateral(
         address _collateralToken,
         uint256 _collateralAmount
-    ) external moreThanZero(_collateralAmount) {
-        // 1. Transfer the collateral token from this contract to the user
-        // 2. Update the collateral balance for the user
+    ) public moreThanZero(_collateralAmount) nonReentrant {
+        s_collateralDeposited[msg.sender][
+            _collateralToken
+        ] -= _collateralAmount;
+        emit CollateralRedeemed(
+            msg.sender,
+            _collateralToken,
+            _collateralAmount
+        );
+        bool success = IERC20(_collateralToken).transfer(
+            msg.sender,
+            _collateralAmount
+        );
+        if (!success) revert DSCEngine__TransferFailed();
+        _revertIfHealthFactorIsTooLow(msg.sender);
     }
 
     /**
@@ -155,7 +176,7 @@ contract DSCEngine is ReentrancyGuard {
      */
     function mintDsc(
         uint256 _dscAmount
-    ) external moreThanZero(_dscAmount) nonReentrant {
+    ) public moreThanZero(_dscAmount) nonReentrant {
         s_dscMinted[msg.sender] += _dscAmount;
         _revertIfHealthFactorIsTooLow(msg.sender);
         bool minted = i_dsc.mint(msg.sender, _dscAmount);
@@ -167,25 +188,38 @@ contract DSCEngine is ReentrancyGuard {
         // 2. Update the DSC balance for the user
     }
 
+    /**
+     * @notice This function allows a user to redeem collateral for DSC tokens.
+     * @param _collateralToken The address of the collateral token to redeem.
+     * @param _collateralAmount The amount of collateral to redeem.
+     * @param _dscAmountToBurn The amount of DSC tokens to burn.
+     * @dev This function will first burn the DSC tokens and then redeem the collateral.
+     * @dev This function will revert if the user's health factor is too low after burning the DSC tokens.
+     */
     function redeemCollateralForDsc(
         address _collateralToken,
         uint256 _collateralAmount,
-        uint256 _dscAmount
+        uint256 _dscAmountToBurn
     ) external {
-        // 1. Transfer the DSC token from the user to this contract
-        // 2. Burn the DSC token
-        // 3. Transfer the collateral token from this contract to the user
-        // 4. Update the collateral and DSC balances for the user
+        burnDsc(_collateralToken, _collateralAmount, _dscAmountToBurn);
+        redeemCollateral(_collateralToken, _collateralAmount);
+        // redeemCollateral already checks the health factor
     }
 
     function burnDsc(
         address _collateralToken,
         uint256 _collateralAmount,
-        uint256 _dscAmount
-    ) external {
-        // 1. Transfer the DSC token from the user to this contract
-        // 2. Burn the DSC token
-        // 3. Update the collateral and DSC balances for the user
+        uint256 _dscAmountToBurn
+    ) public moreThanZero(_dscAmountToBurn) nonReentrant {
+        s_dscMinted[msg.sender] -= _dscAmountToBurn;
+        bool success = i_dsc.transferFrom(
+            msg.sender,
+            address(this),
+            _dscAmount
+        );
+        if (!success) revert DSCEngine__TransferFailed();
+        i_dsc.burn(_dscAmount);
+        _revertIfHealthFactorIsTooLow(msg.sender); // i don't think this would ever hit...
     }
 
     function liquidate(
