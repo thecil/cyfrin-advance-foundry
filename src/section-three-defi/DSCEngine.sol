@@ -150,6 +150,12 @@ contract DSCEngine is ReentrancyGuard {
         mintDsc(_dscAmountToMint);
     }
 
+    /**
+     * @notice This function allows a user to redeem collateral from the system.
+     * @param _collateralToken The address of the collateral token to redeem.
+     * @param _collateralAmount The amount of collateral to redeem.
+     * @dev This function will revert if the user's health factor is too low after redeeming the collateral.
+     */
     function redeemCollateral(
         address _collateralToken,
         uint256 _collateralAmount
@@ -206,6 +212,12 @@ contract DSCEngine is ReentrancyGuard {
         // redeemCollateral already checks the health factor
     }
 
+    /**
+     * @notice This function allows a user to burn DSC tokens.
+     * @param _collateralToken The address of the collateral token to redeem.
+     * @param _collateralAmount The amount of collateral to redeem.
+     * @param _dscAmountToBurn The amount of DSC tokens to burn.
+     */
     function burnDsc(
         address _collateralToken,
         uint256 _collateralAmount,
@@ -238,6 +250,12 @@ contract DSCEngine is ReentrancyGuard {
     //   Private & Internal View Functions   //
     //////////////////////////////////////////
 
+    /**
+     * @notice This function retrieves the total DSC minted and the collateral value in USD for a user.
+     * @param _user The address of the user to retrieve information for.
+     * @return totalDscMinted The total amount of DSC tokens minted by the user.
+     * @return collateralValueInUsd The total value of the user's collateral in USD.
+     */
     function _getAccountInformation(
         address _user
     )
@@ -252,6 +270,8 @@ contract DSCEngine is ReentrancyGuard {
     /**
      * @notice This function calculates the health factor for a user.
      * @param _user The address of the user to calculate the health factor for.
+     * @return healthFactor The health factor for the user.
+     * @dev The health factor is calculated as the collateral value in USD divided by the total DSC minted.
      */
     function _healthFactor(address _user) internal view returns (uint256) {
         (
@@ -263,6 +283,11 @@ contract DSCEngine is ReentrancyGuard {
         return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
     }
 
+    /**
+     * @notice This function checks if the health factor for a user is above the minimum threshold.
+     * @param _user The address of the user to check the health factor for.
+     * @dev This function will revert if the user's health factor is below the minimum threshold.
+     */
     function _revertIfHealthFactorIsTooLow(address _user) internal view {
         uint256 userHealthFactor = _healthFactor(_user);
         if (userHealthFactor < MIN_HEALTH_FACTOR) {
@@ -274,6 +299,13 @@ contract DSCEngine is ReentrancyGuard {
     //   Public & External View Functions   //
     /////////////////////////////////////////
 
+    /**
+     * @notice This function retrieves the total value of a user's collateral in USD.
+     * @param _user The address of the user to retrieve information for.
+     * @return totalCollateralValueInUsd The total value of the user's collateral in USD.
+     * @dev This function iterates through all collateral tokens and calculates their value in USD.
+     * @dev The value is calculated using the price feed for each collateral token.
+     */
     function getAccountCollateralValueInUsd(
         address _user
     ) public view returns (uint256 totalCollateralValueInUsd) {
@@ -291,6 +323,12 @@ contract DSCEngine is ReentrancyGuard {
         }
     }
 
+    /**
+     * @notice This function retrieves the USD value of a given token amount.
+     * @param _token The address of the token to retrieve the value for.
+     * @param _amount The amount of the token to convert to USD.
+     * @return The USD value of the given token amount.
+     */
     function getUsdValue(
         address _token,
         uint256 _amount
