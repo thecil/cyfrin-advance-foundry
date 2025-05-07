@@ -370,6 +370,7 @@ contract DSCEngine is ReentrancyGuard {
             (_usdAmountInWei * PRECISION) /
             (uint256(price) * ADDITIONAL_FEED_PRECISION);
     }
+
     /**
      * @notice This function retrieves the total value of a user's collateral in USD.
      * @param _user The address of the user to retrieve information for.
@@ -411,5 +412,15 @@ contract DSCEngine is ReentrancyGuard {
         return
             ((uint256(price) * ADDITIONAL_FEED_PRECISION) * _amount) /
             PRECISION;
+    }
+
+    function getAccountInformation(
+        address _user
+    )
+        external
+        view
+        returns (uint256 totalDscMinted, uint256 collateralValueInUsd)
+    {
+        (totalDscMinted, collateralValueInUsd) = _getAccountInformation(_user);
     }
 }
