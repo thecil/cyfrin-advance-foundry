@@ -76,7 +76,7 @@ contract DSCEngine is ReentrancyGuard {
     //   Modifiers   //
     ///////////////////
     modifier moreThanZero(uint256 _amount) {
-        if (_amount <= 0) revert DSCEngine__MustBeMoreThanZero();
+        if (_amount == 0) revert DSCEngine__MustBeMoreThanZero();
         _;
     }
 
@@ -161,7 +161,12 @@ contract DSCEngine is ReentrancyGuard {
     function redeemCollateral(
         address _collateralToken,
         uint256 _collateralAmount
-    ) public moreThanZero(_collateralAmount) nonReentrant {
+    )
+        public
+        moreThanZero(_collateralAmount)
+        isAllowedToken(_collateralToken)
+        nonReentrant
+    {
         _redeemCollateral(
             _collateralToken,
             _collateralAmount,
@@ -326,6 +331,16 @@ contract DSCEngine is ReentrancyGuard {
         totalDscMinted = s_dscMinted[_user];
     }
 
+    function _calculateHealthFactor(
+        uint256 totalDscMinted,
+        uint256 collateralValueInUsd
+    ) internal pure returns (uint256) {
+        if (totalDscMinted == 0) return type(uint256).max;
+        uint256 collateralAdjustedForThreshold = (collateralValueInUsd *
+            LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
+        return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
+    }
+
     /**
      * @notice This function calculates the health factor for a user.
      * @param _user The address of the user to calculate the health factor for.
@@ -337,9 +352,7 @@ contract DSCEngine is ReentrancyGuard {
             uint256 totalDscMinted,
             uint256 collateralValueInUsd
         ) = _getAccountInformation(_user);
-        uint256 collateralAdjustedForThreshold = (collateralValueInUsd *
-            LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
-        return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
+        return _calculateHealthFactor(totalDscMinted, collateralValueInUsd);
     }
 
     /**
@@ -357,6 +370,13 @@ contract DSCEngine is ReentrancyGuard {
     ///////////////////////////////////////////
     //   Public & External View Functions   //
     /////////////////////////////////////////
+
+    function getCollateralBalanceOfUser(
+        address _user,
+        address _collateralToken
+    ) public view returns (uint256) {
+        return s_collateralDeposited[_user][_collateralToken];
+    }
 
     function getTokenAmountFromUsd(
         address _collateralToken,
@@ -393,6 +413,7 @@ contract DSCEngine is ReentrancyGuard {
                 collateralAmount
             );
         }
+        return totalCollateralValueInUsd;
     }
 
     /**
@@ -405,6 +426,7 @@ contract DSCEngine is ReentrancyGuard {
         address _token,
         uint256 _amount
     ) public view returns (uint256) {
+        if (_amount == 0) return 0;
         AggregatorV3Interface priceFeed = AggregatorV3Interface(
             s_priceFeeds[_token]
         );
