@@ -38,6 +38,8 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__MintedFailed();
     error DSCEngine__HealthFactorOk();
     error DSCEngine__HealthFactorNotImproved();
+    error DSCEngine__NotEnoughCollateral();
+    error DSCEngine__NotEnoughDscToBurn();
 
     //////////////////////////
     //   State Variables   //
@@ -255,8 +257,6 @@ contract DSCEngine is ReentrancyGuard {
         _revertIfHealthFactorIsTooLow(msg.sender);
     }
 
-    function getHealthFactor() external view returns (uint256) {}
-
     ////////////////////////////////////////////
     //   Private & Internal View Functions   //
     //////////////////////////////////////////
@@ -275,6 +275,8 @@ contract DSCEngine is ReentrancyGuard {
         address _onBehalfOf,
         address _dscFrom
     ) private {
+        if (s_dscMinted[_onBehalfOf] < _dscAmountToBurn)
+            revert DSCEngine__NotEnoughDscToBurn();
         s_dscMinted[_onBehalfOf] -= _dscAmountToBurn;
         bool success = i_dsc.transferFrom(
             _dscFrom,
@@ -298,6 +300,11 @@ contract DSCEngine is ReentrancyGuard {
         address _from,
         address _to
     ) private {
+        if (
+            _amountCollateral >
+            s_collateralDeposited[_from][_tokenCollateralAddress]
+        ) revert DSCEngine__NotEnoughCollateral();
+        if (_amountCollateral == 0) revert DSCEngine__MustBeMoreThanZero();
         s_collateralDeposited[_from][
             _tokenCollateralAddress
         ] -= _amountCollateral;
@@ -370,6 +377,10 @@ contract DSCEngine is ReentrancyGuard {
     ///////////////////////////////////////////
     //   Public & External View Functions   //
     /////////////////////////////////////////
+
+    function getHealthFactor(address _user) public view returns (uint256) {
+        return _healthFactor(_user);
+    }
 
     function getCollateralBalanceOfUser(
         address _user,
