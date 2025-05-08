@@ -18,6 +18,7 @@ contract DSCEngineTest is Test {
     address wbtcUsdPriceFeed;
 
     address public USER = makeAddr("user");
+    address public LIQUIDATOR = makeAddr("liquidator");
     uint256 public constant AMOUNT_COLLATERAL = 10 ether;
     uint256 public constant AMOUNT_MINT_DSC = 1000e18;
     uint256 public constant AMOUNT_BURN_DSC = 500e18;
@@ -313,6 +314,27 @@ contract DSCEngineTest is Test {
             0,
             "The DSC balance after redeeming is incorrect"
         );
+        vm.stopPrank();
+    }
+
+    //////////////////////////
+    // Liquidate DSC Tests //
+    /////////////////////////
+    function testRevertsIfLiquidateWithNoDebt() public depositedCollateral {
+        vm.startPrank(LIQUIDATOR);
+        vm.expectRevert(DSCEngine.DSCEngine__HealthFactorOk.selector);
+        dscEngine.liquidate(weth, USER, AMOUNT_MINT_DSC);
+        vm.stopPrank();
+    }
+
+    function testRevertsIfLiquidateHealthFactorOk()
+        public
+        depositedCollateral
+        mintedDsc
+    {
+        vm.startPrank(LIQUIDATOR);
+        vm.expectRevert(DSCEngine.DSCEngine__HealthFactorOk.selector);
+        dscEngine.liquidate(weth, USER, AMOUNT_MINT_DSC);
         vm.stopPrank();
     }
 }
