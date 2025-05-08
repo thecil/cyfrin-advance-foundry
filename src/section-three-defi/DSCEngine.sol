@@ -225,6 +225,13 @@ contract DSCEngine is ReentrancyGuard {
         _revertIfHealthFactorIsTooLow(msg.sender); // i don't think this would ever hit...
     }
 
+    /**
+     * @notice This function allows a user to liquidate their position if their health factor is below the minimum threshold.
+     * @param _collateralToken The address of the collateral token to redeem.
+     * @param _user The address of the user to liquidate.
+     * @param _dscDebtToCoverAmount The amount of DSC debt to cover.
+     * @dev This function will revert if the user's health factor is above the minimum threshold.
+     */
     function liquidate(
         address _collateralToken,
         address _user,
@@ -240,7 +247,6 @@ contract DSCEngine is ReentrancyGuard {
         );
         uint256 bonusCollateral = (tokenAmountFromDebtCovered *
             LIQUIDATION_BONUS) / LIQUIDATION_PRECISION;
-
         uint256 totalCollateralToRedeem = tokenAmountFromDebtCovered +
             bonusCollateral;
         _redeemCollateral(
@@ -304,7 +310,6 @@ contract DSCEngine is ReentrancyGuard {
             _amountCollateral >
             s_collateralDeposited[_from][_tokenCollateralAddress]
         ) revert DSCEngine__NotEnoughCollateral();
-        if (_amountCollateral == 0) revert DSCEngine__MustBeMoreThanZero();
         s_collateralDeposited[_from][
             _tokenCollateralAddress
         ] -= _amountCollateral;
@@ -377,6 +382,13 @@ contract DSCEngine is ReentrancyGuard {
     ///////////////////////////////////////////
     //   Public & External View Functions   //
     /////////////////////////////////////////
+
+    function calculateHealthFactor(
+        uint256 totalDscMinted,
+        uint256 collateralValueInUsd
+    ) external pure returns (uint256) {
+        return _calculateHealthFactor(totalDscMinted, collateralValueInUsd);
+    }
 
     function getHealthFactor(address _user) public view returns (uint256) {
         return _healthFactor(_user);
