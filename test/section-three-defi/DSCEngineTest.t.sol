@@ -6,6 +6,7 @@ import {DecentralizedStableCoin} from "../../src/section-three-defi/Decentralize
 import {DSCEngine} from "../../src/section-three-defi/DSCEngine.sol";
 import {HelperConfig} from "../../script/section-three-defi/HelperConfig.s.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
+import {MockV3Aggregator} from "@chainlink/local/src/data-feeds/MockV3Aggregator.sol";
 
 contract DSCEngineTest is Test {
     DeployDSCEngine deployer;
@@ -29,6 +30,7 @@ contract DSCEngineTest is Test {
         (ethUsdPriceFeed, wbtcUsdPriceFeed, weth, wbtc, ) = config
             .activeNetworkConfig();
         ERC20Mock(weth).mint(USER, AMOUNT_COLLATERAL);
+        ERC20Mock(weth).mint(LIQUIDATOR, AMOUNT_COLLATERAL);
     }
 
     ////////////////////////
@@ -320,6 +322,17 @@ contract DSCEngineTest is Test {
     //////////////////////////
     // Liquidate DSC Tests //
     /////////////////////////
+
+    modifier liquidatorSetUp() {
+        vm.startPrank(LIQUIDATOR);
+        ERC20Mock(weth).approve(address(dscEngine), AMOUNT_COLLATERAL);
+        dscEngine.depositCollateral(address(weth), AMOUNT_COLLATERAL);
+        dscEngine.mintDsc(AMOUNT_MINT_DSC);
+        dsc.approve(address(dscEngine), AMOUNT_MINT_DSC);
+        vm.stopPrank();
+        _;
+    }
+
     function testRevertsIfLiquidateWithNoDebt() public depositedCollateral {
         vm.startPrank(LIQUIDATOR);
         vm.expectRevert(DSCEngine.DSCEngine__HealthFactorOk.selector);
@@ -335,6 +348,33 @@ contract DSCEngineTest is Test {
         vm.startPrank(LIQUIDATOR);
         vm.expectRevert(DSCEngine.DSCEngine__HealthFactorOk.selector);
         dscEngine.liquidate(weth, USER, AMOUNT_MINT_DSC);
+        vm.stopPrank();
+    }
+
+    function testCanLiquidate()
+        public
+        depositedCollateral
+        mintedDsc
+        liquidatorSetUp
+    {
+        vm.startPrank(USER);
+        dscEngine.redeemCollateral(weth, 9 ether);
+        vm.stopPrank();
+        MockV3Aggregator(ethUsdPriceFeed).updateAnswer(1500e8);
+        vm.startPrank(LIQUIDATOR);
+        uint256 dscBalanceBeforeLiquidate = dsc.balanceOf(LIQUIDATOR);
+        assertEq(
+            dscBalanceBeforeLiquidate,
+            AMOUNT_MINT_DSC,
+            "The DSC balance is incorrect"
+        );
+        dscEngine.liquidate(weth, USER, AMOUNT_MINT_DSC);
+        uint256 dscBalanceAfterLiquidate = dsc.balanceOf(LIQUIDATOR);
+        assertEq(
+            dscBalanceAfterLiquidate,
+            0,
+            "The DSC balance after liquidating is incorrect"
+        );
         vm.stopPrank();
     }
 }
