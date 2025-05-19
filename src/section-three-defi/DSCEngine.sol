@@ -263,6 +263,9 @@ contract DSCEngine is ReentrancyGuard {
         _revertIfHealthFactorIsTooLow(msg.sender);
     }
 
+    function getCollateralTokens() external view returns (address[] memory) {
+        return s_collateralTokens;
+    }
     ////////////////////////////////////////////
     //   Private & Internal View Functions   //
     //////////////////////////////////////////

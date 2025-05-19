@@ -65,12 +65,13 @@ contract DSCEngineTest is Test {
         );
     }
 
-    function testGetTokenAmountFromUsd() public {
+    function testGetTokenAmountFromUsd() public view {
         uint256 usdAmount = 100 ether;
         uint256 expectedWeth = 0.05 ether;
         uint256 actualWeth = dscEngine.getTokenAmountFromUsd(weth, usdAmount);
         assertEq(actualWeth, expectedWeth, "The WETH amount is incorrect");
     }
+
     ///////////////////////////////
     // Deposit Collateral Tests //
     //////////////////////////////
@@ -141,6 +142,7 @@ contract DSCEngineTest is Test {
         dscEngine.redeemCollateral(weth, AMOUNT_COLLATERAL + 1);
         vm.stopPrank();
     }
+    
     function testRevertsIfRedeemZero() public depositedCollateral {
         vm.startPrank(USER);
         uint256 userBalanceBeforeRedeem = dscEngine.getCollateralBalanceOfUser(

@@ -15,4 +15,4 @@ ffi=true
 [invariant]
 runs = 1000
 depth = 128
-fail_on_revert = false
+fail_on_revert = true
