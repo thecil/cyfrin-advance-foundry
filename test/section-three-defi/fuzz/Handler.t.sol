@@ -12,6 +12,8 @@ contract Handler is Test {
     ERC20Mock weth;
     ERC20Mock wbtc;
     uint256 MAX_DEPOSIT_SIZE = type(uint96).max;
+    uint256 public timesMintIsCalled;
+    address[] public usersWithCollateralDeposited;
 
     constructor(DSCEngine _dscEngine, DecentralizedStableCoin _dsc) {
         dscEngine = _dscEngine;
@@ -33,6 +35,7 @@ contract Handler is Test {
         collateral.approve(address(dscEngine), _amountCollateral);
         dscEngine.depositCollateral(address(collateral), _amountCollateral);
         vm.stopPrank();
+        usersWithCollateralDeposited.push(msg.sender);
     }
 
     function redeemCollateral(
@@ -45,8 +48,26 @@ contract Handler is Test {
             address(_collateral)
         );
         _amountCollateral = bound(_amountCollateral, 0, maxCollateralToRedeem);
-        if(_amountCollateral == 0) return;
+        if (_amountCollateral == 0) return;
         dscEngine.redeemCollateral(address(_collateral), _amountCollateral);
+    }
+
+    function mintDsc(uint256 _amountToMint, uint256 _addressSeed) public {
+        if(usersWithCollateralDeposited.length == 0) return;
+        address sender = usersWithCollateralDeposited[
+            _addressSeed % usersWithCollateralDeposited.length
+        ];
+        (uint256 totalDscMinted, uint256 collateralValueInUsd) = dscEngine
+            .getAccountInformation(sender);
+        int256 maxDscToMint = (int256(collateralValueInUsd) / 2) -
+            int256(totalDscMinted);
+        if (maxDscToMint < 0) return;
+        _amountToMint = bound(_amountToMint, 0, uint256(maxDscToMint));
+        if (_amountToMint == 0) return;
+        vm.startPrank(sender);
+        dscEngine.mintDsc(_amountToMint);
+        vm.stopPrank();
+        timesMintIsCalled++;
     }
 
     ////////////////////////
