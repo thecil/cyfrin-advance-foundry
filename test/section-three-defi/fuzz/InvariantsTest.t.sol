@@ -45,10 +45,22 @@ contract InvariantsTest is StdInvariant, Test {
             wbtc,
             totalWbtcDeposited
         );
+
+        console.log("Mints: %s", handler.timesMintIsCalled());
         assertGe(
             wethValueInUsd + wbtcValueInUsd,
             totalSupply,
             "Total supply is more than the value of the collateral"
         );
+    }
+
+    function invariant_gettersShouldNotRevert() external view {
+        dscEngine.getAccountCollateralValueInUsd(msg.sender);
+        dscEngine.getAccountInformation(msg.sender);
+        dscEngine.getCollateralBalanceOfUser(msg.sender, weth);
+        dscEngine.getCollateralTokens();
+        dscEngine.getHealthFactor(msg.sender);
+        dscEngine.getTokenAmountFromUsd(weth, 1 ether);
+        dscEngine.getUsdValue(weth, 1 ether);
     }
 }
