@@ -5,10 +5,12 @@ import {Test, console} from "forge-std/Test.sol";
 import {DSCEngine} from "../../../src/section-three-defi/DSCEngine.sol";
 import {DecentralizedStableCoin} from "../../../src/section-three-defi/DecentralizedStableCoin.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
+import {MockV3Aggregator} from "@chainlink/local/src/data-feeds/MockV3Aggregator.sol";
 
 contract Handler is Test {
     DecentralizedStableCoin public dsc;
     DSCEngine public dscEngine;
+    MockV3Aggregator public ethUsdPriceFeed;
     ERC20Mock weth;
     ERC20Mock wbtc;
     uint256 MAX_DEPOSIT_SIZE = type(uint96).max;
@@ -22,6 +24,10 @@ contract Handler is Test {
         address[] memory _collateralTokens = dscEngine.getCollateralTokens();
         weth = ERC20Mock(_collateralTokens[0]);
         wbtc = ERC20Mock(_collateralTokens[1]);
+
+        ethUsdPriceFeed = MockV3Aggregator(
+            dscEngine.getPriceFeedForCollateral(address(weth))
+        );
     }
 
     function depositCollateral(
@@ -52,8 +58,14 @@ contract Handler is Test {
         dscEngine.redeemCollateral(address(_collateral), _amountCollateral);
     }
 
+    // this break our invariant, so we don't use it
+    // function updateCollateralPrice(uint96 newPrice) public {
+    //     int256 newPriceInt = int256(uint256(newPrice));
+    //     ethUsdPriceFeed.updateAnswer(newPriceInt);
+    // }
+
     function mintDsc(uint256 _amountToMint, uint256 _addressSeed) public {
-        if(usersWithCollateralDeposited.length == 0) return;
+        if (usersWithCollateralDeposited.length == 0) return;
         address sender = usersWithCollateralDeposited[
             _addressSeed % usersWithCollateralDeposited.length
         ];

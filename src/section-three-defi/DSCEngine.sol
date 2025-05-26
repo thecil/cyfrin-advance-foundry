@@ -5,6 +5,7 @@ import {DecentralizedStableCoin} from "./DecentralizedStableCoin.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {AggregatorV3Interface} from "@chainlink/local/src/data-feeds/interfaces/AggregatorV3Interface.sol";
+import {OracleLib} from "./libraries/OracleLib.sol";
 
 /**
  * @title DSCEngine
@@ -40,6 +41,11 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__HealthFactorNotImproved();
     error DSCEngine__NotEnoughCollateral();
     error DSCEngine__NotEnoughDscToBurn();
+
+    ///////////////////
+    //    Types     //
+    //////////////////
+    using OracleLib for AggregatorV3Interface;
 
     //////////////////////////
     //   State Variables   //
@@ -411,7 +417,7 @@ contract DSCEngine is ReentrancyGuard {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(
             s_priceFeeds[_collateralToken]
         );
-        (, int256 price, , , ) = priceFeed.latestRoundData();
+        (, int256 price, , , ) = priceFeed.staleCheckLatestRoundData();
         return
             (_usdAmountInWei * PRECISION) /
             (uint256(price) * ADDITIONAL_FEED_PRECISION);
@@ -456,7 +462,7 @@ contract DSCEngine is ReentrancyGuard {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(
             s_priceFeeds[_token]
         );
-        (, int256 price, , , ) = priceFeed.latestRoundData();
+        (, int256 price, , , ) = priceFeed.staleCheckLatestRoundData();
         return
             ((uint256(price) * ADDITIONAL_FEED_PRECISION) * _amount) /
             PRECISION;
@@ -470,5 +476,11 @@ contract DSCEngine is ReentrancyGuard {
         returns (uint256 totalDscMinted, uint256 collateralValueInUsd)
     {
         (totalDscMinted, collateralValueInUsd) = _getAccountInformation(_user);
+    }
+
+    function getPriceFeedForCollateral(
+        address _collateralToken
+    ) public view returns (address) {
+        return s_priceFeeds[_collateralToken];
     }
 }
