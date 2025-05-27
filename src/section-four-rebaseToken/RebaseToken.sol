@@ -41,6 +41,15 @@ contract RebaseToken is ERC20 {
     }
 
     /**
+     * @notice Get the principle balance of a user.
+     * This is the number of tokens that have currently minted to the user, not including any interest that has accrued since the last time the user interacted with the protocol.
+     * @param _user the
+     */
+    function principleBalanceOf(address _user) external view returns (uint256) {
+        return super.balanceOf(_user);
+    }
+
+    /**
      * @notice Mint the user tokens when they deposit into the vault
      * @param _to The user to mint the tokens to
      * @param _amount The amount of tokens to mint
@@ -139,6 +148,14 @@ contract RebaseToken is ERC20 {
         _mint(_user, balanceIncrease);
     }
 
+    /**
+     * @notice Get the interest rate that is currently set for the contract.
+     * Any future deposit will receive this interest rate.
+     * @return The interest rate for the contract
+     */
+    function getInterestRate() external view returns (uint256) {
+        return s_interestRate;
+    }
     /**
      * @notice Get the interest rate for the user
      * @param _user The user to get the interest rate for
