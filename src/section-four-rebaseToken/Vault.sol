@@ -44,4 +44,9 @@ contract Vault {
         }
         emit Redeem(msg.sender, _amount);
     }
+
+    function getRebaseTokenAddress() public view returns(address) {
+        return address(i_rebaseToken);
+    }
+
 }
