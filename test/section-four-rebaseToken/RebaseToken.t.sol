@@ -101,7 +101,7 @@ contract RebaseTokenTest is Test {
         assertGt(ethBalance, depositAmount);
     }
 
-    function test_transfer(uint256 amount, uint256 amountToSend) public {
+    function test_transfers(uint256 amount, uint256 amountToSend) public {
         amount = bound(amount, 1e5 + 1e5, type(uint96).max);
         amountToSend = bound(amountToSend, 1e5, amount - 1e5);
         // 1. deposit
@@ -110,11 +110,11 @@ contract RebaseTokenTest is Test {
         vault.deposit{value: amount}();
 
         address user2 = makeAddr("user2");
+        address user3 = makeAddr("user3");
         uint256 userBalance = rebaseToken.balanceOf(user);
         uint256 user2Balance = rebaseToken.balanceOf(user2);
         assertEq(userBalance, amount);
         assertEq(user2Balance, 0);
-
         // owner reduce the interest
         vm.prank(owner);
         rebaseToken.setInterestRate(4e10);
@@ -128,9 +128,21 @@ contract RebaseTokenTest is Test {
         assertEq(userBalanceAfterTransfer, userBalance - amountToSend);
         assertEq(user2BalanceAfterTransfer, amountToSend);
 
+        vm.prank(user2);
+        rebaseToken.approve(user3, amountToSend);
+
+        vm.prank(user3);
+        rebaseToken.transferFrom(user2, user3, amountToSend);
+
+        uint256 user2BalanceAfterTransferFrom = rebaseToken.balanceOf(user2);
+        uint256 user3BalanceAfterTransferFrom = rebaseToken.balanceOf(user3);
+
+        assertEq(user2BalanceAfterTransferFrom, 0);
+        assertEq(user3BalanceAfterTransferFrom, amountToSend);
         // check user interest rate has been inherited (5e10 not 4e10)
         assertEq(rebaseToken.getUserInterestRate(user), 5e10);
         assertEq(rebaseToken.getUserInterestRate(user2), 5e10);
+        assertEq(rebaseToken.getUserInterestRate(user3), 5e10);
     }
 
     function test_cannotSetInterestRate(uint256 newInterestRate) public {
