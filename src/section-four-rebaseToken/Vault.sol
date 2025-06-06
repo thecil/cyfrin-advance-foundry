@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "./interfaces/IRebaseToken.sol";
+import {IRebaseToken} from "./interfaces/IRebaseToken.sol";
 
 contract Vault {
     IRebaseToken public immutable i_rebaseToken;
@@ -45,8 +45,7 @@ contract Vault {
         emit Redeem(msg.sender, _amount);
     }
 
-    function getRebaseTokenAddress() public view returns(address) {
+    function getRebaseTokenAddress() public view returns (address) {
         return address(i_rebaseToken);
     }
-
 }
