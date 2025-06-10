@@ -1,5 +1,6 @@
 @openzeppelin/=lib/openzeppelin-contracts/
 @ccip/=lib/chainlink-local/lib/ccip/
+@chainlink-local/=lib/chainlink-local/
 @chainlink/contracts-ccip/=lib/chainlink-local/lib/ccip/contracts/
 @chainlink/contracts/=lib/chainlink-local/lib/chainlink-brownie-contracts/contracts/
 @chainlink/local/src/=lib/chainlink-local/src/
