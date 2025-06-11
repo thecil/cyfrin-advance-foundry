@@ -9,10 +9,10 @@ import {IRebaseToken} from "./interfaces/IRebaseToken.sol";
 contract RebaseTokenPool is TokenPool {
     constructor(
         IERC20 _token,
-        address memory _allowList,
-        address _rnmProxy,
+        address[] memory _allowList,
+        address _rmnProxy,
         address _router
-    ) TokenPool(_token, 18, _allowlist, _rmnProxy, _router) {}
+    ) TokenPool(_token, 18, _allowList, _rmnProxy, _router) {}
 
     function lockOrBurn(
         Pool.LockOrBurnInV1 calldata lockOrBurnIn
@@ -20,7 +20,7 @@ contract RebaseTokenPool is TokenPool {
         _validateLockOrBurn(lockOrBurnIn);
         uint256 userInterestRate = IRebaseToken(address(i_token))
             .getUserInterestRate(lockOrBurnIn.originalSender);
-        IRebaseToken(address(i_token)).burn(address(this), lockOrBurn.amount);
+        IRebaseToken(address(i_token)).burn(address(this), lockOrBurnIn.amount);
         lockOrBurnOut = Pool.LockOrBurnOutV1({
             destTokenAddress: getRemoteToken(lockOrBurnIn.remoteChainSelector),
             destPoolData: abi.encode(userInterestRate)
