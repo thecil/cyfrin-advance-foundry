@@ -153,37 +153,46 @@ contract CrossChainTest is Test {
 
     // Function to bridge tokens between two chains.
     function bridgeTokens(
-        uint256 amountToBridge,
-        uint256 localFork,
-        uint256 remoteFork,
-        Register.NetworkDetails memory localNetworkDetails,
-        Register.NetworkDetails memory remoteNetworkDetails,
-        RebaseToken localToken,
-        RebaseToken remoteToken
+        uint256 amountToBridge, // Amount of tokens to bridge
+        uint256 localFork, // Fork ID for the local chain
+        uint256 remoteFork, // Fork ID for the remote chain
+        Register.NetworkDetails memory localNetworkDetails, // Details of the local network
+        Register.NetworkDetails memory remoteNetworkDetails, // Details of the remote network
+        RebaseToken localToken, // Local token contract instance
+        RebaseToken remoteToken // Remote token contract instance
     ) public {
-        vm.selectFork(localFork);
-        vm.startPrank(user);
+        vm.selectFork(localFork); // Select the fork for the local chain
+        vm.startPrank(user); // Impersonate the user to perform actions on their behalf
+
+        // Prepare the token amounts to be transferred
         Client.EVMTokenAmount[]
             memory tokenAmounts = new Client.EVMTokenAmount[](1);
         tokenAmounts[0] = Client.EVMTokenAmount({
-            token: address(localToken),
-            amount: amountToBridge
+            token: address(localToken), // Token contract address for local network
+            amount: amountToBridge // Amount to transfer
         });
 
+        // Create the message object with necessary details
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
-            receiver: abi.encode(user),
-            data: "",
-            tokenAmounts: tokenAmounts,
-            feeToken: localNetworkDetails.linkAddress,
-            extraArgs: Client._argsToBytes(
-                Client.EVMExtraArgsV1({gasLimit: 200_000})
-            )
+            receiver: abi.encode(user), // Receiver of the tokens
+            data: "", // No additional data required for this message
+            tokenAmounts: tokenAmounts, // Array of token amounts to transfer
+            feeToken: localNetworkDetails.linkAddress, // Link token address for paying fees
+            extraArgs: Client._argsToBytes( // Extra arguments for the message
+                    Client.EVMExtraArgsV1({gasLimit: 200_000})
+                )
         });
+
+        // Calculate the fee required for the transaction
         uint256 fee = IRouterClient(localNetworkDetails.routerAddress).getFee(
-            remoteNetworkDetails.chainSelector,
-            message
+            remoteNetworkDetails.chainSelector, // Chain selector for the remote network
+            message // Message object
         );
+
+        // Request LINK from the faucet for paying fees
         ccipLocalSimulatorFork.requestLinkFromFaucet(user, fee);
+
+        // Approve the Router to use the required amount of LINK and local tokens
         vm.startPrank(user);
         IERC20(localNetworkDetails.linkAddress).approve(
             localNetworkDetails.routerAddress,
@@ -193,31 +202,56 @@ contract CrossChainTest is Test {
             localNetworkDetails.routerAddress,
             amountToBridge
         );
+
+        // Get the balance of the user's local token before bridging
         uint256 localBalanceBefore = localToken.balanceOf(user);
+
+        // Send the message to the remote chain using the Router
         IRouterClient(localNetworkDetails.routerAddress).ccipSend(
             remoteNetworkDetails.chainSelector,
             message
         );
+
+        // Get the balance of the user's local token after bridging
         uint256 localBalanceAfter = localToken.balanceOf(user);
+
+        // Stop impersonating the user
         vm.stopPrank();
 
+        // Assert that the local balance is reduced by the amount bridged
         assertEq(
             localBalanceAfter,
             localBalanceBefore - amountToBridge,
             "local balance should be reduced by the amount to bridge"
         );
-        uint256 localUserInterestRate = localToken.getUserInterestRate(user);
+
+        // Select the fork for the remote chain
         vm.selectFork(remoteFork);
+
+        // Warp time forward to simulate a delay in receiving the message
         vm.warp(block.timestamp + 20 minutes);
+
+        // Get the balance of the user's remote token before bridging
         uint256 remoteBalanceBefore = remoteToken.balanceOf(user);
+
+        // Switch to the remote fork and route the message
         ccipLocalSimulatorFork.switchChainAndRouteMessage(remoteFork);
+
+        // Get the balance of the user's remote token after bridging
         uint256 remoteBalanceAfter = remoteToken.balanceOf(user);
+
+        // Assert that the remote balance is increased by the amount bridged
         assertEq(
             remoteBalanceAfter,
             remoteBalanceBefore + amountToBridge,
             "remote balance should be increased by the amount to bridge"
         );
+
+        // Get the user's interest rate on both tokens before and after bridging
+        uint256 localUserInterestRate = localToken.getUserInterestRate(user);
         uint256 remoteUserInterestRate = remoteToken.getUserInterestRate(user);
+
+        // Assert that the user's interest rate remains unchanged
         assertEq(
             remoteUserInterestRate,
             localUserInterestRate,
