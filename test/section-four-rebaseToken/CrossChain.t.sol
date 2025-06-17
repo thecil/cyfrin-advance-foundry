@@ -3,11 +3,13 @@ pragma solidity ^0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
 
+// Importing necessary contracts and interfaces for testing RebaseToken functionality on cross-chain operations.
 import {RebaseToken} from "../../src/section-four-rebaseToken/RebaseToken.sol";
 import {RebaseTokenPool} from "../../src/section-four-rebaseToken/RebaseTokenPool.sol";
 import {Vault} from "../../src/section-four-rebaseToken/Vault.sol";
 import {IRebaseToken} from "../../src/section-four-rebaseToken/interfaces/IRebaseToken.sol";
 
+// Importing ChainLink CCIP contracts and interfaces for simulating cross-chain interactions.
 import {CCIPLocalSimulatorFork, Register} from "@chainlink-local/src/ccip/CCIPLocalSimulatorFork.sol";
 import {IERC20} from "@ccip/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/IERC20.sol";
 import {RegistryModuleOwnerCustom} from "@ccip/contracts/src/v0.8/ccip/tokenAdminRegistry/RegistryModuleOwnerCustom.sol";
@@ -17,9 +19,12 @@ import {RateLimiter} from "@ccip/contracts/src/v0.8/ccip/libraries/RateLimiter.s
 import {Client} from "@ccip/contracts/src/v0.8/ccip/libraries/Client.sol";
 import {IRouterClient} from "@chainlink-local/lib/ccip/contracts/src/v0.8/ccip/interfaces/IRouterClient.sol";
 
+// Defining the CrossChainTest contract that inherits from Test for testing purposes.
 contract CrossChainTest is Test {
     address public owner = makeAddr("owner"); // Define the owner address
     address public user = makeAddr("user");
+    uint256 SEND_VALUE = 1e5;
+
     uint256 public sepoliaFork; // Variable to store the Sepolia fork ID
     uint256 public arbSepoliaFork; // Variable to store the Arbitrum on Sepolia fork ID
 
@@ -35,9 +40,11 @@ contract CrossChainTest is Test {
     Register.NetworkDetails public sepoliaNetworkDetails; // Network details for Sepolia
     Register.NetworkDetails public arbSepoliaNetworkDetails; // Network details for Arbitrum on Sepolia
 
+    // Function to set up the testing environment.
     function setUp() public {
         sepoliaFork = vm.createSelectFork("sepolia"); // Create a fork of the Sepolia network
         arbSepoliaFork = vm.createFork("arb-sepolia"); // Create a fork of the Arbitrum on Sepolia network
+
         ccipLocalSimulatorFork = new CCIPLocalSimulatorFork(); // Deploy the CCIP Local Simulator Fork contract
         vm.makePersistent(address(ccipLocalSimulatorFork)); // Make the CCIP Local Simulator Fork contract persistent across forks
 
@@ -69,8 +76,6 @@ contract CrossChainTest is Test {
             .acceptAdminRole(address(sepoliaToken));
         TokenAdminRegistry(sepoliaNetworkDetails.tokenAdminRegistryAddress)
             .setPool(address(sepoliaToken), address(sepoliaPool));
-
-        vm.stopPrank(); // Stop impersonating the owner account
 
         // 2. Deploy and config on arbitrum sepolia
         vm.selectFork(arbSepoliaFork); // Switch to the Arbitrum on Sepolia fork
@@ -115,6 +120,7 @@ contract CrossChainTest is Test {
         vm.stopPrank(); // Stop impersonating the owner account
     }
 
+    // Function to configure token pools for cross-chain operations.
     function configureTokenPool(
         uint256 fork,
         address localPool,
@@ -123,7 +129,6 @@ contract CrossChainTest is Test {
         address remoteTokenAddress
     ) public {
         vm.selectFork(fork);
-        vm.startPrank(owner);
         bytes[] memory remotePoolAddresses = new bytes[](1);
         remotePoolAddresses[0] = abi.encode(remotePool);
         TokenPool.ChainUpdate[]
@@ -146,6 +151,7 @@ contract CrossChainTest is Test {
         TokenPool(localPool).applyChainUpdates(new uint64[](0), chainsToAdd);
     }
 
+    // Function to bridge tokens between two chains.
     function bridgeTokens(
         uint256 amountToBridge,
         uint256 localFork,
@@ -169,7 +175,9 @@ contract CrossChainTest is Test {
             data: "",
             tokenAmounts: tokenAmounts,
             feeToken: localNetworkDetails.linkAddress,
-            extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0}))
+            extraArgs: Client._argsToBytes(
+                Client.EVMExtraArgsV1({gasLimit: 200_000})
+            )
         });
         uint256 fee = IRouterClient(localNetworkDetails.routerAddress).getFee(
             remoteNetworkDetails.chainSelector,
@@ -214,6 +222,43 @@ contract CrossChainTest is Test {
             remoteUserInterestRate,
             localUserInterestRate,
             "user interest rate should remain unchanged"
+        );
+    }
+
+    function test_bridgeAllTokens() public {
+        vm.selectFork(sepoliaFork); // Switch to the Sepolia fork
+        vm.deal(user, SEND_VALUE); // Assign a balance to the user on the Sepolia network
+        vm.startPrank(user); // Start prank mode from the user's perspective
+        Vault(payable(address(vault))).deposit{value: SEND_VALUE}(); // Deposit tokens into the vault and assert that the value has been sent
+        assertEq(
+            sepoliaToken.balanceOf(user),
+            SEND_VALUE,
+            "user should have sent the value"
+        );
+
+        // Bridge tokens from Sepolia to Arbitrum on Sepolia fork
+        bridgeTokens(
+            SEND_VALUE,
+            sepoliaFork,
+            arbSepoliaFork,
+            sepoliaNetworkDetails,
+            arbSepoliaNetworkDetails,
+            sepoliaToken,
+            arbSepoliaToken
+        );
+
+        vm.selectFork(arbSepoliaFork); // Switch to the Arbitrum on Sepolia fork
+        vm.warp(block.timestamp + 20 minutes); // Warp time forward by 20 minutes to ensure the bridge is ready
+
+        // Bridge tokens back from Arbitrum on Sepolia to Sepolia fork
+        bridgeTokens(
+            arbSepoliaToken.balanceOf(user),
+            arbSepoliaFork,
+            sepoliaFork,
+            arbSepoliaNetworkDetails,
+            sepoliaNetworkDetails,
+            arbSepoliaToken,
+            sepoliaToken
         );
     }
 }
