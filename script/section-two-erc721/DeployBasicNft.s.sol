@@ -9,7 +9,7 @@ contract DeployBasicNft is Script {
 
     function run() external returns (BasicNft) {
         vm.startBroadcast();
-        BasicNft nft = new BasicNft("BasicNft-LilPudgys","BNFT-LP");
+        BasicNft nft = new BasicNft("BasicNft-LilPudgys", "BNFT-LP");
         vm.stopBroadcast();
         return nft;
     }

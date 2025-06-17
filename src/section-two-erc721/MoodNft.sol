@@ -17,6 +17,7 @@ contract MoodNft is ERC721, Ownable {
         SAD,
         HAPPY
     }
+
     mapping(uint256 => Mood) private s_tokenIdToMood;
 
     constructor(
@@ -46,13 +47,12 @@ contract MoodNft is ERC721, Ownable {
             s_tokenIdToMood[tokenId] = Mood.HAPPY;
         }
     }
+
     function _baseURI() internal pure override returns (string memory) {
         return "data:application/json;base64,";
     }
 
-    function tokenURI(
-        uint256 tokenId
-    ) public view virtual override returns (string memory) {
+    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         if (ownerOf(tokenId) == address(0)) {
             revert ERC721NonexistentToken(tokenId);
         }
@@ -61,23 +61,22 @@ contract MoodNft is ERC721, Ownable {
         if (s_tokenIdToMood[tokenId] == Mood.SAD) {
             imageURI = s_sadSvgImageUri;
         }
-        return
-            string(
-                abi.encodePacked(
-                    _baseURI(),
-                    Base64.encode(
-                        bytes( // bytes casting actually unnecessary as 'abi.encodePacked()' returns a bytes
-                            abi.encodePacked(
-                                '{"name":"',
-                                name(), // You can add whatever name here
-                                '", "description":"An NFT that reflects the mood of the owner, 100% on Chain!", ',
-                                '"attributes": [{"trait_type": "moodiness", "value": 100}], "image":"',
-                                imageURI,
-                                '"}'
-                            )
+        return string(
+            abi.encodePacked(
+                _baseURI(),
+                Base64.encode(
+                    bytes( // bytes casting actually unnecessary as 'abi.encodePacked()' returns a bytes
+                        abi.encodePacked(
+                            '{"name":"',
+                            name(), // You can add whatever name here
+                            '", "description":"An NFT that reflects the mood of the owner, 100% on Chain!", ',
+                            '"attributes": [{"trait_type": "moodiness", "value": 100}], "image":"',
+                            imageURI,
+                            '"}'
                         )
                     )
                 )
-            );
+            )
+        );
     }
 }

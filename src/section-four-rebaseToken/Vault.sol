@@ -19,11 +19,7 @@ contract Vault {
     receive() external payable {}
 
     function deposit() external payable {
-        i_rebaseToken.mint(
-            msg.sender,
-            msg.value,
-            i_rebaseToken.getInterestRate()
-        );
+        i_rebaseToken.mint(msg.sender, msg.value, i_rebaseToken.getInterestRate());
         emit Deposit(msg.sender, msg.value);
     }
 
@@ -38,7 +34,7 @@ contract Vault {
         }
         i_rebaseToken.burn(msg.sender, _amount);
         // executes redeem of the underlying asset
-        (bool success, ) = payable(msg.sender).call{value: _amount}("");
+        (bool success,) = payable(msg.sender).call{value: _amount}("");
         if (!success) {
             revert Vault__RedeemFailed();
         }

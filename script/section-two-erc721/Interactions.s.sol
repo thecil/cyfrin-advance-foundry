@@ -9,10 +9,7 @@ contract MintBasicNft is Script {
     uint256 constant INITIAL_SUPPLY = 100 ether;
 
     function run() external {
-        address _mostRecentDeployment = DevOpsTools.get_most_recent_deployment(
-            "BasicNft",
-            block.chainid
-        );
+        address _mostRecentDeployment = DevOpsTools.get_most_recent_deployment("BasicNft", block.chainid);
         mintNftOnContract(_mostRecentDeployment);
     }
 

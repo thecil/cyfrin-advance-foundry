@@ -7,12 +7,9 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 contract BasicNft is ERC721, Ownable {
     uint256 private s_tokenCounter;
-    string private constant TOKEN_URI =
-        "https://api.pudgypenguins.io/lil/image/";
-    constructor(
-        string memory _name,
-        string memory _symbol
-    ) ERC721(_name, _symbol) Ownable(msg.sender) {
+    string private constant TOKEN_URI = "https://api.pudgypenguins.io/lil/image/";
+
+    constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) Ownable(msg.sender) {
         s_tokenCounter = 1;
     }
 
@@ -21,12 +18,7 @@ contract BasicNft is ERC721, Ownable {
         s_tokenCounter++;
     }
 
-    function tokenURI(
-        uint256 tokenId
-    ) public pure override returns (string memory) {
-        return
-            string(
-                abi.encodePacked(TOKEN_URI, Strings.toString(tokenId))
-            );
+    function tokenURI(uint256 tokenId) public pure override returns (string memory) {
+        return string(abi.encodePacked(TOKEN_URI, Strings.toString(tokenId)));
     }
 }

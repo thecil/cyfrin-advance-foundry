@@ -16,12 +16,8 @@ contract BridgeTokensScript is Script {
         address ccipRouterAddress
     ) public {
         vm.startBroadcast();
-        Client.EVMTokenAmount[]
-            memory tokenAmounts = new Client.EVMTokenAmount[](1);
-        tokenAmounts[0] = Client.EVMTokenAmount({
-            token: tokenToSendAddress,
-            amount: amountToSend
-        });
+        Client.EVMTokenAmount[] memory tokenAmounts = new Client.EVMTokenAmount[](1);
+        tokenAmounts[0] = Client.EVMTokenAmount({token: tokenToSendAddress, amount: amountToSend});
 
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(receiverAddress),
@@ -30,16 +26,10 @@ contract BridgeTokensScript is Script {
             feeToken: linkTokenAddress,
             extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0}))
         });
-        uint256 fee = IRouterClient(ccipRouterAddress).getFee(
-            destinationChainSelector,
-            message
-        );
+        uint256 fee = IRouterClient(ccipRouterAddress).getFee(destinationChainSelector, message);
         IERC20(linkTokenAddress).approve(ccipRouterAddress, fee);
         IERC20(tokenToSendAddress).approve(ccipRouterAddress, amountToSend);
-        IRouterClient(ccipRouterAddress).ccipSend(
-            destinationChainSelector,
-            message
-        );
+        IRouterClient(ccipRouterAddress).ccipSend(destinationChainSelector, message);
         vm.startBroadcast();
     }
 }
