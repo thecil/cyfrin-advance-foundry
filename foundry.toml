@@ -6,12 +6,14 @@ fs_permissions = [
     { access = "read", path = "./"},
 ]
 ffi=true
-remappings_regenerate = true
+auto_detect_remappings = true
 remappings = [
     "@openzeppelin/=lib/openzeppelin-contracts/",
     "@ccip/=lib/chainlink-local/lib/ccip/",
     "@chainlink-local/=lib/chainlink-local/",
 ]
+etherscan_api_key="${ETHERSCAN_API_KEY}"
+[profile.test]
 
 [rpc_endpoints]
 sepolia = "${SEPOLIA_RPC_URL}"
