@@ -12,6 +12,7 @@ remappings = [
     "@openzeppelin/=lib/openzeppelin-contracts/",
     "@ccip/=lib/chainlink-local/lib/ccip/",
     "@chainlink-local/=lib/chainlink-local/",
+    "@murky/=lib/murky/src/"
 ]
 etherscan_api_key="${ETHERSCAN_API_KEY}"
 [profile.test]

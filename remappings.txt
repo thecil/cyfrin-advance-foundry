@@ -1,6 +1,7 @@
 @openzeppelin/=lib/openzeppelin-contracts/
 @ccip/=lib/chainlink-local/lib/ccip/
 @chainlink-local/=lib/chainlink-local/
+@murky/=lib/murky/src/
 @chainlink/contracts-ccip/=lib/chainlink-local/lib/ccip/contracts/
 @chainlink/contracts/=lib/chainlink-local/lib/chainlink-brownie-contracts/contracts/
 @chainlink/local/src/=lib/chainlink-local/src/
@@ -12,4 +13,5 @@ erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/
 forge-std/=lib/forge-std/src/
 foundry-devops/=lib/foundry-devops/
 halmos-cheatcodes/=lib/openzeppelin-contracts/lib/halmos-cheatcodes/src/
+murky/=lib/murky/
 openzeppelin-contracts/=lib/openzeppelin-contracts/
