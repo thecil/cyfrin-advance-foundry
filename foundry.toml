@@ -4,7 +4,7 @@ out = "out"
 libs = ["lib"]
 via_ir=true
 fs_permissions = [
-    { access = "read", path = "./"},
+    { access = "read-write", path = "./"},
 ]
 ffi=true
 auto_detect_remappings = true
@@ -12,7 +12,7 @@ remappings = [
     "@openzeppelin/=lib/openzeppelin-contracts/",
     "@ccip/=lib/chainlink-local/lib/ccip/",
     "@chainlink-local/=lib/chainlink-local/",
-    "@murky/=lib/murky/src/"
+    "@murky/=lib/murky/"
 ]
 etherscan_api_key="${ETHERSCAN_API_KEY}"
 [profile.test]

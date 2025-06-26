@@ -48,3 +48,11 @@ deploy-mood-nft:
 
 deploy-mood-nft-sepolia:
 	@forge script script/section-two-erc721/DeployMoodNft.s.sol:DeployMoodNft --rpc-url $(SEPOLIA_RPC_URL) --account $(ACCOUNT) --sender $(SENDER) --etherscan-api-key $(ETHERSCAN_API_KEY) --broadcast --verify
+
+# Generate Input
+generate-input:
+	@forge script script/section-five-airdrop/GenerateInput.s.sol:GenerateInput --rpc-url http://127.0.0.1:8545 --private-key $(DEFAULT_ANVIL_KEY)
+
+# Make merkle
+make-merkle:
+	@forge script script/section-five-airdrop/MakeMerkle.s.sol:MakeMerkle --rpc-url http://127.0.0.1:8545 --private-key $(DEFAULT_ANVIL_KEY)
