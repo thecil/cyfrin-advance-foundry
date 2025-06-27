@@ -8,8 +8,10 @@ import {BagelToken} from "../../src/section-five-airdrop/BagelToken.sol";
 import {MerkleAirdrop} from "../../src/section-five-airdrop/MerkleAirdrop.sol";
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import {ZkSyncChainChecker} from "lib/foundry-devops/src/ZkSyncChainChecker.sol";
+import {DeployMerkleAirdropScript} from "../../script/section-five-airdrop/DeployMerkleAirdrop.s.sol";
 
-contract MerkleAirdropTest is Test {
+contract MerkleAirdropTest is ZkSyncChainChecker, Test {
     BagelToken public token;
     MerkleAirdrop public airdrop;
 
@@ -26,9 +28,14 @@ contract MerkleAirdropTest is Test {
     uint256 userPrivKey;
 
     function setUp() public {
-        token = new BagelToken();
-        airdrop = new MerkleAirdrop(ROOT, IERC20(address(token)));
-        token.mint(address(airdrop), AMOUNT_TO_SEND);
+        if (!isZkSyncChain()) {
+            DeployMerkleAirdropScript deployer = new DeployMerkleAirdropScript();
+            (airdrop, token) = deployer.deployMerkleAirdrop();
+        } else {
+            token = new BagelToken();
+            airdrop = new MerkleAirdrop(ROOT, IERC20(address(token)));
+            token.mint(address(airdrop), AMOUNT_TO_SEND);
+        }
         (user, userPrivKey) = makeAddrAndKey("user");
     }
 
