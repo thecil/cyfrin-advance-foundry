@@ -14,7 +14,7 @@ remappings = [
     "@chainlink-local/=lib/chainlink-local/",
     "@murky/=lib/murky/",
     "foundry-devops/=lib/foundry-devops",
-    "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/"
+    "@oz/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/"
 ]
 etherscan_api_key="${ETHERSCAN_API_KEY}"
 [profile.test]
