@@ -4,8 +4,8 @@ pragma solidity ^0.8.24;
 
 import {Script} from "forge-std/Script.sol";
 import {DevOpsTools} from "foundry-devops/src/DevOpsTools.sol";
-import {BoxV2} from "../../src/section-six-upgradable/BoxV2.sol";
-import {BoxV1} from "../../src/section-six-upgradable/BoxV1.sol";
+import {BoxV2} from "../../src/sec-six-upgradable/BoxV2.sol";
+import {BoxV1} from "../../src/sec-six-upgradable/BoxV1.sol";
 
 contract UpgradeBox is Script {
     function run() external returns (address) {

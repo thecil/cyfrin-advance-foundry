@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.24;
 import {Test} from "forge-std/Test.sol";
-import {DeployBox} from "../../script/section-six-upgradable/DeployBox.s.sol";
-import {UpgradeBox} from "../../script/section-six-upgradable/UpgradeBox.s.sol";
-import {BoxV1} from "../../src/section-six-upgradable/BoxV1.sol";
-import {BoxV2} from "../../src/section-six-upgradable/BoxV2.sol";
+import {DeployBox} from "../../script/sec-six-upgradable/DeployBox.s.sol";
+import {UpgradeBox} from "../../script/sec-six-upgradable/UpgradeBox.s.sol";
+import {BoxV1} from "../../src/sec-six-upgradable/BoxV1.sol";
+import {BoxV2} from "../../src/sec-six-upgradable/BoxV2.sol";
 
 contract DeployAndUpgradeTest is Test {
     DeployBox public deployer;
