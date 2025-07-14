@@ -4,8 +4,8 @@ pragma solidity ^0.8.24;
 import {Script} from "forge-std/Script.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {MerkleAirdrop} from "../../src/section-five-airdrop/MerkleAirdrop.sol";
-import {BagelToken} from "../../src/section-five-airdrop/BagelToken.sol";
+import {MerkleAirdrop} from "../../src/sec-five-airdrop/MerkleAirdrop.sol";
+import {BagelToken} from "../../src/sec-five-airdrop/BagelToken.sol";
 
 contract DeployMerkleAirdropScript is Script {
     bytes32 private s_merkleRoot =

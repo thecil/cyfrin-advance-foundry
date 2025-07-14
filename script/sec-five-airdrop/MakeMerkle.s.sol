@@ -28,9 +28,8 @@ contract MakeMerkle is Script, ScriptHelper {
 
     Merkle private m = new Merkle(); // instance of the merkle contract from Murky to do shit
 
-    string private inputPath = "/script/section-five-airdrop/target/input.json";
-    string private outputPath =
-        "/script/section-five-airdrop/target/output.json";
+    string private inputPath = "/script/sec-five-airdrop/target/input.json";
+    string private outputPath = "/script/sec-five-airdrop/target/output.json";
 
     string private elements =
         vm.readFile(string.concat(vm.projectRoot(), inputPath)); // get the absolute path

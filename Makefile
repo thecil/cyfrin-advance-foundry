@@ -51,12 +51,12 @@ deploy-mood-nft-sepolia:
 
 # Generate Input
 generate-input:
-	@forge script script/section-five-airdrop/GenerateInput.s.sol:GenerateInput --rpc-url http://127.0.0.1:8545 --private-key $(DEFAULT_ANVIL_KEY)
+	@forge script script/sec-five-airdrop/GenerateInput.s.sol:GenerateInput --rpc-url http://127.0.0.1:8545 --private-key $(DEFAULT_ANVIL_KEY)
 
 # Make merkle
 make-merkle:
-	@forge script script/section-five-airdrop/MakeMerkle.s.sol:MakeMerkle --rpc-url http://127.0.0.1:8545 --private-key $(DEFAULT_ANVIL_KEY)
+	@forge script script/sec-five-airdrop/MakeMerkle.s.sol:MakeMerkle --rpc-url http://127.0.0.1:8545 --private-key $(DEFAULT_ANVIL_KEY)
 
 # Deploy MerkleAirdrop
 deploy-merkle-airdrop:
-	@forge script script/section-five-airdrop/DeployMerkleAirdrop.s.sol:DeployMerkleAirdropScript --rpc-url http://127.0.0.1:8545 --private-key $(DEFAULT_ANVIL_KEY) --broadcast
+	@forge script script/sec-five-airdrop/DeployMerkleAirdrop.s.sol:DeployMerkleAirdropScript --rpc-url http://127.0.0.1:8545 --private-key $(DEFAULT_ANVIL_KEY) --broadcast

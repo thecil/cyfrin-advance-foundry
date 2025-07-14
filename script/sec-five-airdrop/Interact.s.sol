@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 
 import {Script} from "forge-std/Script.sol";
 import {DevOpsTools} from "foundry-devops/src/DevOpsTools.sol";
-import {MerkleAirdrop} from "../../src/section-five-airdrop/MerkleAirdrop.sol";
+import {MerkleAirdrop} from "../../src/sec-five-airdrop/MerkleAirdrop.sol";
 
 contract ClaimAirdrop is Script {
     error ClaimAirdropScript__InvalidSignatureLength();
