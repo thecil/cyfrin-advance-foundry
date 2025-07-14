@@ -4,9 +4,11 @@
 @murky/=lib/murky/
 foundry-devops/=lib/foundry-devops/
 @oz/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
+@account-abstraction/=lib/account-abstraction/contracts/
 @chainlink/contracts-ccip/=lib/chainlink-local/lib/ccip/contracts/
 @chainlink/contracts/=lib/chainlink-local/lib/chainlink-brownie-contracts/contracts/
 @chainlink/local/src/=lib/chainlink-local/src/
+account-abstraction/=lib/account-abstraction/contracts/
 ccip/=lib/chainlink-local/lib/ccip/
 chainlink-brownie-contracts/=lib/chainlink-local/lib/chainlink-brownie-contracts/contracts/src/v0.6/vendor/@arbitrum/nitro-contracts/src/
 chainlink-local/=lib/chainlink-local/src/
