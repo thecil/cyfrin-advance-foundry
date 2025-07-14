@@ -2,10 +2,10 @@
 pragma solidity ^0.8.20;
 
 import {Test, console} from "forge-std/Test.sol";
-import {DeployDSCEngine} from "../../script/section-three-defi/DeployDSCEngine.s.sol";
-import {DecentralizedStableCoin} from "../../src/section-three-defi/DecentralizedStableCoin.sol";
-import {DSCEngine} from "../../src/section-three-defi/DSCEngine.sol";
-import {HelperConfig} from "../../script/section-three-defi/HelperConfig.s.sol";
+import {DeployDSCEngine} from "../../script/sec-three-defi/DeployDSCEngine.s.sol";
+import {DecentralizedStableCoin} from "../../src/sec-three-defi/DecentralizedStableCoin.sol";
+import {DSCEngine} from "../../src/sec-three-defi/DSCEngine.sol";
+import {HelperConfig} from "../../script/sec-three-defi/HelperConfig.s.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {MockV3Aggregator} from "@chainlink/local/src/data-feeds/MockV3Aggregator.sol";
 
@@ -28,7 +28,8 @@ contract DSCEngineTest is Test {
     function setUp() public {
         deployer = new DeployDSCEngine();
         (dsc, dscEngine, config) = deployer.run();
-        (ethUsdPriceFeed, wbtcUsdPriceFeed, weth, wbtc,) = config.activeNetworkConfig();
+        (ethUsdPriceFeed, wbtcUsdPriceFeed, weth, wbtc, ) = config
+            .activeNetworkConfig();
         ERC20Mock(weth).mint(USER, AMOUNT_COLLATERAL);
         ERC20Mock(weth).mint(LIQUIDATOR, AMOUNT_COLLATERAL);
     }
@@ -44,7 +45,11 @@ contract DSCEngineTest is Test {
         tokenAddresses.push(weth);
         priceFeedAddresses.push(ethUsdPriceFeed);
         priceFeedAddresses.push(wbtcUsdPriceFeed);
-        vm.expectRevert(DSCEngine.DSCEngine__CollateralTokensAddressesAndPriceFeedsMustMatchLength.selector);
+        vm.expectRevert(
+            DSCEngine
+                .DSCEngine__CollateralTokensAddressesAndPriceFeedsMustMatchLength
+                .selector
+        );
         new DSCEngine(tokenAddresses, priceFeedAddresses, address(dsc));
     }
     //////////////////
@@ -55,7 +60,11 @@ contract DSCEngineTest is Test {
         uint256 wethAmount = 15 ether;
         uint256 expectedUsdValue = 30000e18;
         uint256 actualUsdValue = dscEngine.getUsdValue(weth, wethAmount);
-        assertEq(actualUsdValue, expectedUsdValue, "The USD value is incorrect");
+        assertEq(
+            actualUsdValue,
+            expectedUsdValue,
+            "The USD value is incorrect"
+        );
     }
 
     function testGetTokenAmountFromUsd() public view {
@@ -94,21 +103,42 @@ contract DSCEngineTest is Test {
         vm.stopPrank();
     }
 
-    function testCanDepositCollateralAndGetAccountInfo() public depositedCollateral {
-        (uint256 totalDscMinted, uint256 collateralValueInUsd) = dscEngine.getAccountInformation(USER);
+    function testCanDepositCollateralAndGetAccountInfo()
+        public
+        depositedCollateral
+    {
+        (uint256 totalDscMinted, uint256 collateralValueInUsd) = dscEngine
+            .getAccountInformation(USER);
         uint256 expectedTotalDscMinted = 0;
-        uint256 expectedDepositAmount = dscEngine.getTokenAmountFromUsd(weth, collateralValueInUsd);
-        assertEq(totalDscMinted, expectedTotalDscMinted, "The total DSC minted is incorrect");
-        assertEq(AMOUNT_COLLATERAL, expectedDepositAmount, "The collateral value in USD is incorrect");
+        uint256 expectedDepositAmount = dscEngine.getTokenAmountFromUsd(
+            weth,
+            collateralValueInUsd
+        );
+        assertEq(
+            totalDscMinted,
+            expectedTotalDscMinted,
+            "The total DSC minted is incorrect"
+        );
+        assertEq(
+            AMOUNT_COLLATERAL,
+            expectedDepositAmount,
+            "The collateral value in USD is incorrect"
+        );
     }
 
     ///////////////////////////////
     // Redeem Collateral Tests //
     //////////////////////////////
 
-    function testRevertsIfRedeemMoreThanCollateral() public depositedCollateral {
+    function testRevertsIfRedeemMoreThanCollateral()
+        public
+        depositedCollateral
+    {
         vm.startPrank(USER);
-        uint256 userBalanceBeforeRedeem = dscEngine.getCollateralBalanceOfUser(USER, weth);
+        uint256 userBalanceBeforeRedeem = dscEngine.getCollateralBalanceOfUser(
+            USER,
+            weth
+        );
         assertEq(userBalanceBeforeRedeem, AMOUNT_COLLATERAL);
         vm.expectRevert(DSCEngine.DSCEngine__NotEnoughCollateral.selector);
         dscEngine.redeemCollateral(weth, AMOUNT_COLLATERAL + 1);
@@ -117,7 +147,10 @@ contract DSCEngineTest is Test {
 
     function testRevertsIfRedeemZero() public depositedCollateral {
         vm.startPrank(USER);
-        uint256 userBalanceBeforeRedeem = dscEngine.getCollateralBalanceOfUser(USER, weth);
+        uint256 userBalanceBeforeRedeem = dscEngine.getCollateralBalanceOfUser(
+            USER,
+            weth
+        );
         assertEq(userBalanceBeforeRedeem, AMOUNT_COLLATERAL);
         vm.expectRevert(DSCEngine.DSCEngine__MustBeMoreThanZero.selector);
         dscEngine.redeemCollateral(weth, 0);
@@ -126,10 +159,16 @@ contract DSCEngineTest is Test {
 
     function testCanRedeemCollateral() public depositedCollateral {
         vm.startPrank(USER);
-        uint256 userBalanceBeforeRedeem = dscEngine.getCollateralBalanceOfUser(USER, weth);
+        uint256 userBalanceBeforeRedeem = dscEngine.getCollateralBalanceOfUser(
+            USER,
+            weth
+        );
         assertEq(userBalanceBeforeRedeem, AMOUNT_COLLATERAL);
         dscEngine.redeemCollateral(weth, AMOUNT_COLLATERAL);
-        uint256 userBalanceAfterRedeem = dscEngine.getCollateralBalanceOfUser(USER, weth);
+        uint256 userBalanceAfterRedeem = dscEngine.getCollateralBalanceOfUser(
+            USER,
+            weth
+        );
         assertEq(userBalanceAfterRedeem, 0);
         vm.stopPrank();
     }
@@ -149,7 +188,9 @@ contract DSCEngineTest is Test {
         vm.startPrank(USER);
         uint256 userBalanceBeforeMint = dsc.balanceOf(USER);
         assertEq(userBalanceBeforeMint, 0);
-        vm.expectPartialRevert(DSCEngine.DSCEngine__HealthFactorTooLow.selector);
+        vm.expectPartialRevert(
+            DSCEngine.DSCEngine__HealthFactorTooLow.selector
+        );
         dscEngine.mintDsc(100000e18);
         vm.stopPrank();
     }
@@ -163,16 +204,24 @@ contract DSCEngineTest is Test {
         vm.stopPrank();
     }
 
-    function testRevertsAfterMintingIfRedeemHealthFactorTooLow() public depositedCollateral mintedDsc {
+    function testRevertsAfterMintingIfRedeemHealthFactorTooLow()
+        public
+        depositedCollateral
+        mintedDsc
+    {
         vm.startPrank(USER);
-        vm.expectPartialRevert(DSCEngine.DSCEngine__HealthFactorTooLow.selector);
+        vm.expectPartialRevert(
+            DSCEngine.DSCEngine__HealthFactorTooLow.selector
+        );
         dscEngine.redeemCollateral(weth, 9.9 ether);
         vm.stopPrank();
     }
 
     function testRevertsIfMintingWithoutCollateral() public {
         vm.startPrank(USER);
-        vm.expectPartialRevert(DSCEngine.DSCEngine__HealthFactorTooLow.selector);
+        vm.expectPartialRevert(
+            DSCEngine.DSCEngine__HealthFactorTooLow.selector
+        );
         dscEngine.mintDsc(AMOUNT_MINT_DSC);
         vm.stopPrank();
     }
@@ -182,13 +231,24 @@ contract DSCEngineTest is Test {
         assertEq(userBalance, AMOUNT_MINT_DSC, "The DSC balance is incorrect");
     }
 
-    function testCanMintAndRedeemCollateral() public depositedCollateral mintedDsc {
+    function testCanMintAndRedeemCollateral()
+        public
+        depositedCollateral
+        mintedDsc
+    {
         vm.startPrank(USER);
         uint256 userBalance = dsc.balanceOf(USER);
         assertEq(userBalance, AMOUNT_MINT_DSC, "The DSC balance is incorrect");
         dscEngine.redeemCollateral(weth, 5 ether);
-        uint256 userBalanceAfterRedeem = dscEngine.getCollateralBalanceOfUser(USER, weth);
-        assertEq(userBalanceAfterRedeem, 5 ether, "The collateral value after redeeming is incorrect");
+        uint256 userBalanceAfterRedeem = dscEngine.getCollateralBalanceOfUser(
+            USER,
+            weth
+        );
+        assertEq(
+            userBalanceAfterRedeem,
+            5 ether,
+            "The collateral value after redeeming is incorrect"
+        );
         vm.stopPrank();
     }
 
@@ -204,10 +264,18 @@ contract DSCEngineTest is Test {
         _;
     }
 
-    function testRevertsIfBurnMoreThanBalance() public depositedCollateral mintedDsc {
+    function testRevertsIfBurnMoreThanBalance()
+        public
+        depositedCollateral
+        mintedDsc
+    {
         vm.startPrank(USER);
         uint256 userBalanceBeforeBurn = dsc.balanceOf(USER);
-        assertEq(userBalanceBeforeBurn, AMOUNT_MINT_DSC, "The DSC balance is incorrect");
+        assertEq(
+            userBalanceBeforeBurn,
+            AMOUNT_MINT_DSC,
+            "The DSC balance is incorrect"
+        );
         dsc.approve(address(dscEngine), AMOUNT_BURN_DSC);
         vm.expectRevert(DSCEngine.DSCEngine__NotEnoughDscToBurn.selector);
         dscEngine.burnDsc(AMOUNT_MINT_DSC + 1);
@@ -223,18 +291,35 @@ contract DSCEngineTest is Test {
 
     function testCanBurnDSC() public depositedCollateral mintedDsc burnDsc {
         uint256 userBalanceAfterBurn = dsc.balanceOf(USER);
-        assertEq(userBalanceAfterBurn, AMOUNT_BURN_DSC, "The DSC balance should be zero after burning");
+        assertEq(
+            userBalanceAfterBurn,
+            AMOUNT_BURN_DSC,
+            "The DSC balance should be zero after burning"
+        );
     }
 
-    function testCanRedeemCollateralForDsc() public depositedCollateral mintedDsc {
+    function testCanRedeemCollateralForDsc()
+        public
+        depositedCollateral
+        mintedDsc
+    {
         vm.startPrank(USER);
         dscEngine.redeemCollateral(weth, 5 ether);
         dsc.approve(address(dscEngine), AMOUNT_MINT_DSC);
         dscEngine.redeemCollateralForDsc(weth, 5 ether, AMOUNT_MINT_DSC);
-        uint256 userCollateralBalanceAfterRedeem = dscEngine.getCollateralBalanceOfUser(USER, weth);
-        assertEq(userCollateralBalanceAfterRedeem, 0, "The collateral value after redeeming is incorrect");
+        uint256 userCollateralBalanceAfterRedeem = dscEngine
+            .getCollateralBalanceOfUser(USER, weth);
+        assertEq(
+            userCollateralBalanceAfterRedeem,
+            0,
+            "The collateral value after redeeming is incorrect"
+        );
         uint256 userBalanceAfterRedeem = dsc.balanceOf(USER);
-        assertEq(userBalanceAfterRedeem, 0, "The DSC balance after redeeming is incorrect");
+        assertEq(
+            userBalanceAfterRedeem,
+            0,
+            "The DSC balance after redeeming is incorrect"
+        );
         vm.stopPrank();
     }
 
@@ -259,24 +344,41 @@ contract DSCEngineTest is Test {
         vm.stopPrank();
     }
 
-    function testRevertsIfLiquidateHealthFactorOk() public depositedCollateral mintedDsc {
+    function testRevertsIfLiquidateHealthFactorOk()
+        public
+        depositedCollateral
+        mintedDsc
+    {
         vm.startPrank(LIQUIDATOR);
         vm.expectRevert(DSCEngine.DSCEngine__HealthFactorOk.selector);
         dscEngine.liquidate(weth, USER, AMOUNT_MINT_DSC);
         vm.stopPrank();
     }
 
-    function testCanLiquidate() public depositedCollateral mintedDsc liquidatorSetUp {
+    function testCanLiquidate()
+        public
+        depositedCollateral
+        mintedDsc
+        liquidatorSetUp
+    {
         vm.startPrank(USER);
         dscEngine.redeemCollateral(weth, 9 ether);
         vm.stopPrank();
         MockV3Aggregator(ethUsdPriceFeed).updateAnswer(1500e8);
         vm.startPrank(LIQUIDATOR);
         uint256 dscBalanceBeforeLiquidate = dsc.balanceOf(LIQUIDATOR);
-        assertEq(dscBalanceBeforeLiquidate, AMOUNT_MINT_DSC, "The DSC balance is incorrect");
+        assertEq(
+            dscBalanceBeforeLiquidate,
+            AMOUNT_MINT_DSC,
+            "The DSC balance is incorrect"
+        );
         dscEngine.liquidate(weth, USER, AMOUNT_MINT_DSC);
         uint256 dscBalanceAfterLiquidate = dsc.balanceOf(LIQUIDATOR);
-        assertEq(dscBalanceAfterLiquidate, 0, "The DSC balance after liquidating is incorrect");
+        assertEq(
+            dscBalanceAfterLiquidate,
+            0,
+            "The DSC balance after liquidating is incorrect"
+        );
         vm.stopPrank();
     }
 }
