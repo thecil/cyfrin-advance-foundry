@@ -2,8 +2,8 @@
 pragma solidity ^0.8.20;
 
 import {Test} from "forge-std/Test.sol";
-import {BasicNft} from "../../src/section-two-erc721/BasicNft.sol";
-import {DeployBasicNft} from "../../script/section-two-erc721/DeployBasicNft.s.sol";
+import {BasicNft} from "../../src/sec-two-erc721/BasicNft.sol";
+import {DeployBasicNft} from "../../script/sec-two-erc721/DeployBasicNft.s.sol";
 
 contract BasicNftTest is Test {
     BasicNft public nft_contract;
@@ -11,7 +11,8 @@ contract BasicNftTest is Test {
 
     string constant name = "BasicNft-LilPudgys";
     string constant symbol = "BNFT-LP";
-    string private constant TOKEN_URI = "https://api.pudgypenguins.io/lil/image/";
+    string private constant TOKEN_URI =
+        "https://api.pudgypenguins.io/lil/image/";
 
     function setUp() public {
         deployer = new DeployBasicNft();
