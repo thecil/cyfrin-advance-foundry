@@ -2,9 +2,9 @@
 pragma solidity ^0.8.20;
 
 import {Test, console} from "forge-std/Test.sol";
-import {RebaseToken} from "../../src/section-four-rebaseToken/RebaseToken.sol";
-import {Vault} from "../../src/section-four-rebaseToken/Vault.sol";
-import {IRebaseToken} from "../../src/section-four-rebaseToken/interfaces/IRebaseToken.sol";
+import {RebaseToken} from "../../src/sec-four-rebase-token/RebaseToken.sol";
+import {Vault} from "../../src/sec-four-rebase-token/Vault.sol";
+import {IRebaseToken} from "../../src/sec-four-rebase-token/interfaces/IRebaseToken.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 
@@ -24,7 +24,9 @@ contract RebaseTokenTest is Test {
     }
 
     function addRewardsToVault(uint256 rewardAmount) public {
-        (bool success,) = payable(address(vault)).call{value: rewardAmount}("");
+        (bool success, ) = payable(address(vault)).call{value: rewardAmount}(
+            ""
+        );
     }
 
     function test_depositLinear(uint256 amount) public {
@@ -52,7 +54,11 @@ contract RebaseTokenTest is Test {
         console.log("endBalance", endBalance);
         assertGt(endBalance, middleBalance);
 
-        assertApproxEqAbs(endBalance - middleBalance, middleBalance - startBalance, 1);
+        assertApproxEqAbs(
+            endBalance - middleBalance,
+            middleBalance - startBalance,
+            1
+        );
 
         vm.stopPrank();
     }
@@ -69,7 +75,10 @@ contract RebaseTokenTest is Test {
         vm.stopPrank();
     }
 
-    function test_RedeemAfterTimePassed(uint256 depositAmount, uint256 time) public {
+    function test_RedeemAfterTimePassed(
+        uint256 depositAmount,
+        uint256 time
+    ) public {
         depositAmount = bound(depositAmount, 1e5, type(uint96).max);
         time = bound(time, 1000, type(uint96).max);
         vm.deal(user, depositAmount);
@@ -139,7 +148,12 @@ contract RebaseTokenTest is Test {
 
     function test_cannotSetInterestRate(uint256 newInterestRate) public {
         vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, user));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Ownable.OwnableUnauthorizedAccount.selector,
+                user
+            )
+        );
         rebaseToken.setInterestRate(newInterestRate);
     }
 
@@ -151,13 +165,17 @@ contract RebaseTokenTest is Test {
         console.log("msg.sender: %s", msg.sender);
         vm.expectRevert(
             abi.encodeWithSelector(
-                IAccessControl.AccessControlUnauthorizedAccount.selector, user, keccak256("MINT_AND_BURN_ROLE")
+                IAccessControl.AccessControlUnauthorizedAccount.selector,
+                user,
+                keccak256("MINT_AND_BURN_ROLE")
             )
         );
         rebaseToken.mint(user, 100, interestRate);
         vm.expectRevert(
             abi.encodeWithSelector(
-                IAccessControl.AccessControlUnauthorizedAccount.selector, user, keccak256("MINT_AND_BURN_ROLE")
+                IAccessControl.AccessControlUnauthorizedAccount.selector,
+                user,
+                keccak256("MINT_AND_BURN_ROLE")
             )
         );
         rebaseToken.burn(user, 100);
@@ -180,11 +198,17 @@ contract RebaseTokenTest is Test {
 
     function test_InterestRateCanOnlyDecrease(uint256 newInterestRate) public {
         uint256 currentInterestRate = rebaseToken.getInterestRate();
-        newInterestRate = bound(newInterestRate, currentInterestRate + 1, type(uint256).max);
+        newInterestRate = bound(
+            newInterestRate,
+            currentInterestRate + 1,
+            type(uint256).max
+        );
         vm.startPrank(owner);
         vm.expectRevert(
             abi.encodeWithSelector(
-                RebaseToken.RebaseToken__InterestRateCanOnlyDecrease.selector, currentInterestRate, newInterestRate
+                RebaseToken.RebaseToken__InterestRateCanOnlyDecrease.selector,
+                currentInterestRate,
+                newInterestRate
             )
         );
         rebaseToken.setInterestRate(newInterestRate);

@@ -4,12 +4,12 @@ pragma solidity ^0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
 
-import {BagelToken} from "../../src/section-five-airdrop/BagelToken.sol";
-import {MerkleAirdrop} from "../../src/section-five-airdrop/MerkleAirdrop.sol";
+import {BagelToken} from "../../src/sec-five-airdrop/BagelToken.sol";
+import {MerkleAirdrop} from "../../src/sec-five-airdrop/MerkleAirdrop.sol";
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {ZkSyncChainChecker} from "lib/foundry-devops/src/ZkSyncChainChecker.sol";
-import {DeployMerkleAirdropScript} from "../../script/section-five-airdrop/DeployMerkleAirdrop.s.sol";
+import {DeployMerkleAirdropScript} from "../../script/sec-five-airdrop/DeployMerkleAirdrop.s.sol";
 
 contract MerkleAirdropTest is ZkSyncChainChecker, Test {
     BagelToken public token;

@@ -7,25 +7,35 @@ import {IERC20} from "@ccip/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8
 import {RegistryModuleOwnerCustom} from "@ccip/contracts/src/v0.8/ccip/tokenAdminRegistry/RegistryModuleOwnerCustom.sol";
 import {TokenAdminRegistry} from "@ccip/contracts/src/v0.8/ccip/tokenAdminRegistry/TokenAdminRegistry.sol";
 
-import {RebaseToken} from "../../src/section-four-rebaseToken/RebaseToken.sol";
-import {RebaseTokenPool} from "../../src/section-four-rebaseToken/RebaseTokenPool.sol";
+import {RebaseToken} from "../../src/sec-four-rebase-token/RebaseToken.sol";
+import {RebaseTokenPool} from "../../src/sec-four-rebase-token/RebaseTokenPool.sol";
 
-import {Vault} from "../../src/section-four-rebaseToken/Vault.sol";
-import {IRebaseToken} from "../../src/section-four-rebaseToken/interfaces/IRebaseToken.sol";
+import {Vault} from "../../src/sec-four-rebase-token/Vault.sol";
+import {IRebaseToken} from "../../src/sec-four-rebase-token/interfaces/IRebaseToken.sol";
 
 contract TokenAndPoolDeployer is Script {
     function run() public returns (RebaseToken token, RebaseTokenPool pool) {
         CCIPLocalSimulatorFork ccipLocalSimulatorFork = new CCIPLocalSimulatorFork();
-        Register.NetworkDetails memory networkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
+        Register.NetworkDetails memory networkDetails = ccipLocalSimulatorFork
+            .getNetworkDetails(block.chainid);
         vm.startBroadcast();
         token = new RebaseToken();
         pool = new RebaseTokenPool(
-            IERC20(address(token)), new address[](0), networkDetails.rmnProxyAddress, networkDetails.routerAddress
+            IERC20(address(token)),
+            new address[](0),
+            networkDetails.rmnProxyAddress,
+            networkDetails.routerAddress
         );
         token.grantMintAndBurnRole(address(pool));
-        RegistryModuleOwnerCustom(networkDetails.registryModuleOwnerCustomAddress).registerAdminViaOwner(address(token));
-        TokenAdminRegistry(networkDetails.tokenAdminRegistryAddress).acceptAdminRole(address(token));
-        TokenAdminRegistry(networkDetails.tokenAdminRegistryAddress).setPool(address(token), address(pool));
+        RegistryModuleOwnerCustom(
+            networkDetails.registryModuleOwnerCustomAddress
+        ).registerAdminViaOwner(address(token));
+        TokenAdminRegistry(networkDetails.tokenAdminRegistryAddress)
+            .acceptAdminRole(address(token));
+        TokenAdminRegistry(networkDetails.tokenAdminRegistryAddress).setPool(
+            address(token),
+            address(pool)
+        );
 
         vm.stopBroadcast();
     }
