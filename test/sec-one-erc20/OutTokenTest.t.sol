@@ -3,8 +3,8 @@ pragma solidity ^0.8.20;
 
 import {Test} from "forge-std/Test.sol";
 
-import {OurToken} from "../../src/section-one-erc20/OurToken.sol";
-import {DeployOurToken} from "../../script/section-one-erc20/DeployOurToken.s.sol";
+import {OurToken} from "../../src/sec-one-erc20/OurToken.sol";
+import {DeployOurToken} from "../../script/sec-one-erc20/DeployOurToken.s.sol";
 
 contract OurTokenTest is Test {
     OurToken public ourToken;

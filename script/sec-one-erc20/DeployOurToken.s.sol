@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {Script} from "forge-std/Script.sol";
-import {OurToken} from "../../src/section-one-erc20/OurToken.sol";
+import {OurToken} from "../../src/sec-one-erc20/OurToken.sol";
 
 contract DeployOurToken is Script {
     uint256 constant INITIAL_SUPPLY = 100 ether;
