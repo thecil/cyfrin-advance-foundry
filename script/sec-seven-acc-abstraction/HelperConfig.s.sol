@@ -2,7 +2,8 @@
 
 pragma solidity ^0.8.24;
 
-import {Script} from "forge-std/Script.sol";
+import {Script, console2} from "forge-std/Script.sol";
+import {EntryPoint} from "@account-abstraction/core/EntryPoint.sol";
 
 contract HelperConfig is Script {
     error HelperConfig__InvalidChainId();
@@ -16,6 +17,10 @@ contract HelperConfig is Script {
     uint256 constant ZKSYNC_SEPOLIA_CHAIN_ID = 300;
     uint256 constant LOCAL_CHAIN_ID = 31337;
     address constant BURNER_WALLET = 0xfC4df9696423Bc4C450040f4Fd2C4504529dFce3;
+    // address constant FOUNDRY_DEFAULT_WALLET = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
+
+    address ANVIL_DEFAULT_ACCOUNT = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+
     NetworkConfig public localNetworkConfig;
     mapping(uint256 chainId => NetworkConfig) public networkConfigs;
 
@@ -23,13 +28,13 @@ contract HelperConfig is Script {
         networkConfigs[ETH_SEPOLIA_CHAIN_ID] = getEthSepoliaConfig();
     }
 
-    function getConfig() public view returns (NetworkConfig memory) {
+    function getConfig() public returns (NetworkConfig memory) {
         return getConfigByChainId(block.chainid);
     }
 
     function getConfigByChainId(
         uint256 chainId
-    ) public view returns (NetworkConfig memory) {
+    ) public returns (NetworkConfig memory) {
         if (chainId == LOCAL_CHAIN_ID) {
             return getOrCreateAnvilConfig();
         } else if (networkConfigs[chainId].account != address(0)) {
@@ -55,14 +60,21 @@ contract HelperConfig is Script {
         return NetworkConfig({entryPoint: address(0), account: BURNER_WALLET});
     }
 
-    function getOrCreateAnvilConfig()
-        public
-        view
-        returns (NetworkConfig memory)
-    {
+    function getOrCreateAnvilConfig() public returns (NetworkConfig memory) {
         if (localNetworkConfig.account != address(0)) {
             return localNetworkConfig;
         }
-        // todo: deploy a mock entry point contract
+
+        console2.log("Deploying mocks...");
+        vm.startBroadcast(ANVIL_DEFAULT_ACCOUNT);
+        EntryPoint entryPoint = new EntryPoint();
+        vm.stopBroadcast();
+
+        localNetworkConfig = NetworkConfig({
+            entryPoint: address(entryPoint),
+            account: ANVIL_DEFAULT_ACCOUNT
+        });
+
+        return localNetworkConfig;
     }
 }

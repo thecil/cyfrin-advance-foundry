@@ -53,8 +53,7 @@ contract MinimalAccount is IAccount, Ownable {
                            EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function execute(address dest, uint256 value, bytes calldata functionData) external payable {
-        // i_entryPoint.execute(userOp, userOpHash);
+    function execute(address dest, uint256 value, bytes calldata functionData) external requireFromEntryPointOrOwner {
         (bool success, bytes memory result) = dest.call{value: value}(functionData);
         if (!success) {
             revert MinimalAccount__ExecutionCallFailed(result);

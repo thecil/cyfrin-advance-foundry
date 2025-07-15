@@ -3,7 +3,7 @@
 pragma solidity ^0.8.24;
 
 import {Script} from "forge-std/Script.sol";
-import {MinimalAccount} from "../../src/sec-seven-acc-abstraction/ethereum/MinimalAccount.sol";
+import {MinimalAccount} from "src/sec-seven-acc-abstraction/ethereum/MinimalAccount.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
 contract DeployMinimal is Script {
@@ -18,7 +18,7 @@ contract DeployMinimal is Script {
 
         vm.startBroadcast(config.account);
         MinimalAccount minimalAccount = new MinimalAccount(config.entryPoint);
-        minimalAccount.transferOwnership(msg.sender);
+        minimalAccount.transferOwnership(config.account);
         vm.stopBroadcast();
 
         return (helperConfig, minimalAccount);
