@@ -33,90 +33,48 @@ contract MinimalAccountTest is Test {
     }
 
     function test_ownerCanExecuteCommands() public {
-        assertEq(
-            usdc.balanceOf(address(minimalAccount)),
-            0,
-            "Owner should have no tokens initially"
-        );
+        assertEq(usdc.balanceOf(address(minimalAccount)), 0, "Owner should have no tokens initially");
         address dest = address(usdc);
         uint256 value = 0;
-        bytes memory functionData = abi.encodeWithSelector(
-            ERC20Mock.mint.selector,
-            address(minimalAccount),
-            AMOUNT_TO_MINT
-        );
+        bytes memory functionData =
+            abi.encodeWithSelector(ERC20Mock.mint.selector, address(minimalAccount), AMOUNT_TO_MINT);
 
         vm.startPrank(minimalAccount.owner());
         minimalAccount.execute(dest, value, functionData);
         vm.stopPrank();
 
-        assertEq(
-            usdc.balanceOf(address(minimalAccount)),
-            AMOUNT_TO_MINT,
-            "Owner should have tokens after executing"
-        );
+        assertEq(usdc.balanceOf(address(minimalAccount)), AMOUNT_TO_MINT, "Owner should have tokens after executing");
     }
 
     function test_nonOwnerCannotExecuteCommands() public {
-        assertEq(
-            usdc.balanceOf(address(minimalAccount)),
-            0,
-            "Owner should have no tokens initially"
-        );
+        assertEq(usdc.balanceOf(address(minimalAccount)), 0, "Owner should have no tokens initially");
         address dest = address(usdc);
         uint256 value = 0;
-        bytes memory functionData = abi.encodeWithSelector(
-            ERC20Mock.mint.selector,
-            address(minimalAccount),
-            AMOUNT_TO_MINT
-        );
+        bytes memory functionData =
+            abi.encodeWithSelector(ERC20Mock.mint.selector, address(minimalAccount), AMOUNT_TO_MINT);
 
         vm.startPrank(randomUser);
-        vm.expectRevert(
-            MinimalAccount.MinimalAccount__NotFromEntryPointOrOwner.selector
-        );
+        vm.expectRevert(MinimalAccount.MinimalAccount__NotFromEntryPointOrOwner.selector);
         minimalAccount.execute(dest, value, functionData);
     }
 
     function test_recoverSignedOp() public {
-        assertEq(
-            usdc.balanceOf(address(minimalAccount)),
-            0,
-            "Owner should have no tokens initially"
-        );
+        assertEq(usdc.balanceOf(address(minimalAccount)), 0, "Owner should have no tokens initially");
         address dest = address(usdc);
         uint256 value = 0;
-        bytes memory functionData = abi.encodeWithSelector(
-            ERC20Mock.mint.selector,
-            address(minimalAccount),
-            AMOUNT_TO_MINT
-        );
-        bytes memory executeCallData = abi.encodeWithSelector(
-            MinimalAccount.execute.selector,
-            dest,
-            value,
-            functionData
-        );
-        PackedUserOperation memory packedUserOp = sendPackedUserOp
-            .generatedSignedUserOperation(
-                executeCallData,
-                helperConfig.getConfig()
-            );
+        bytes memory functionData =
+            abi.encodeWithSelector(ERC20Mock.mint.selector, address(minimalAccount), AMOUNT_TO_MINT);
+        bytes memory executeCallData =
+            abi.encodeWithSelector(MinimalAccount.execute.selector, dest, value, functionData);
+        PackedUserOperation memory packedUserOp =
+            sendPackedUserOp.generatedSignedUserOperation(executeCallData, helperConfig.getConfig());
 
-        bytes32 userOperationHash = IEntryPoint(
-            helperConfig.getConfig().entryPoint
-        ).getUserOpHash(packedUserOp);
+        bytes32 userOperationHash = IEntryPoint(helperConfig.getConfig().entryPoint).getUserOpHash(packedUserOp);
 
-        address actualSigner = ECDSA.recover(
-            userOperationHash.toEthSignedMessageHash(),
-            packedUserOp.signature
-        );
+        address actualSigner = ECDSA.recover(userOperationHash.toEthSignedMessageHash(), packedUserOp.signature);
 
-        assertEq(
-            actualSigner,
-            minimalAccount.owner(),
-            "Actual signer should be the owner"
-        );
+        assertEq(actualSigner, minimalAccount.owner(), "Actual signer should be the owner");
     }
+
     function test_validationUserOps() public {}
 }

@@ -32,9 +32,7 @@ contract HelperConfig is Script {
         return getConfigByChainId(block.chainid);
     }
 
-    function getConfigByChainId(
-        uint256 chainId
-    ) public returns (NetworkConfig memory) {
+    function getConfigByChainId(uint256 chainId) public returns (NetworkConfig memory) {
         if (chainId == LOCAL_CHAIN_ID) {
             return getOrCreateAnvilConfig();
         } else if (networkConfigs[chainId].account != address(0)) {
@@ -45,18 +43,10 @@ contract HelperConfig is Script {
     }
 
     function getEthSepoliaConfig() public pure returns (NetworkConfig memory) {
-        return
-            NetworkConfig({
-                entryPoint: address(0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789),
-                account: BURNER_WALLET
-            });
+        return NetworkConfig({entryPoint: address(0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789), account: BURNER_WALLET});
     }
 
-    function getZkSyncSepoliaConfig()
-        public
-        pure
-        returns (NetworkConfig memory)
-    {
+    function getZkSyncSepoliaConfig() public pure returns (NetworkConfig memory) {
         return NetworkConfig({entryPoint: address(0), account: BURNER_WALLET});
     }
 
@@ -70,10 +60,7 @@ contract HelperConfig is Script {
         EntryPoint entryPoint = new EntryPoint();
         vm.stopBroadcast();
 
-        localNetworkConfig = NetworkConfig({
-            entryPoint: address(entryPoint),
-            account: ANVIL_DEFAULT_ACCOUNT
-        });
+        localNetworkConfig = NetworkConfig({entryPoint: address(entryPoint), account: ANVIL_DEFAULT_ACCOUNT});
 
         return localNetworkConfig;
     }
