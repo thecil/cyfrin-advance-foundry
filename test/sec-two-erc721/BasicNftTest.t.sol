@@ -11,8 +11,7 @@ contract BasicNftTest is Test {
 
     string constant name = "BasicNft-LilPudgys";
     string constant symbol = "BNFT-LP";
-    string private constant TOKEN_URI =
-        "https://api.pudgypenguins.io/lil/image/";
+    string private constant TOKEN_URI = "https://api.pudgypenguins.io/lil/image/";
 
     function setUp() public {
         deployer = new DeployBasicNft();

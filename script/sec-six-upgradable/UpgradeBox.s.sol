@@ -9,8 +9,7 @@ import {BoxV1} from "../../src/sec-six-upgradable/BoxV1.sol";
 
 contract UpgradeBox is Script {
     function run() external returns (address) {
-        address mostRecentDeployedProxy = DevOpsTools
-            .get_most_recent_deployment("ERC1967Proxy", block.chainid);
+        address mostRecentDeployedProxy = DevOpsTools.get_most_recent_deployment("ERC1967Proxy", block.chainid);
         vm.startBroadcast();
         BoxV2 newBox = new BoxV2();
         vm.stopBroadcast();
@@ -18,10 +17,7 @@ contract UpgradeBox is Script {
         return proxy;
     }
 
-    function upgradeBox(
-        address oldProxy,
-        address newImplementation
-    ) public returns (address) {
+    function upgradeBox(address oldProxy, address newImplementation) public returns (address) {
         vm.startBroadcast();
         BoxV1 proxy = BoxV1(payable(oldProxy));
         proxy.upgradeToAndCall(newImplementation, "");

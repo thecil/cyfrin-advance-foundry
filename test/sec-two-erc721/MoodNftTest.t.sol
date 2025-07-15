@@ -22,27 +22,24 @@ contract MoodNftTest is Test {
         nft_contract = deployer.run();
     }
 
-    function expectedTokenUri(
-        string memory imageUri
-    ) internal view returns (string memory) {
-        return
-            string(
-                abi.encodePacked(
-                    BASE_URI,
-                    Base64.encode(
-                        bytes( // bytes casting actually unnecessary as 'abi.encodePacked()' returns a bytes
-                            abi.encodePacked(
-                                '{"name":"',
-                                nft_contract.name(), // You can add whatever name here
-                                '", "description":"An NFT that reflects the mood of the owner, 100% on Chain!", ',
-                                '"attributes": [{"trait_type": "moodiness", "value": 100}], "image":"',
-                                imageUri,
-                                '"}'
-                            )
+    function expectedTokenUri(string memory imageUri) internal view returns (string memory) {
+        return string(
+            abi.encodePacked(
+                BASE_URI,
+                Base64.encode(
+                    bytes( // bytes casting actually unnecessary as 'abi.encodePacked()' returns a bytes
+                        abi.encodePacked(
+                            '{"name":"',
+                            nft_contract.name(), // You can add whatever name here
+                            '", "description":"An NFT that reflects the mood of the owner, 100% on Chain!", ',
+                            '"attributes": [{"trait_type": "moodiness", "value": 100}], "image":"',
+                            imageUri,
+                            '"}'
                         )
                     )
                 )
-            );
+            )
+        );
     }
 
     function testViewTokenUri() public {

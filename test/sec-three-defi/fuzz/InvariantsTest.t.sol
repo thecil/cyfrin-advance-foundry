@@ -24,34 +24,21 @@ contract InvariantsTest is StdInvariant, Test {
     function setUp() external {
         deployer = new DeployDSCEngine();
         (dsc, dscEngine, config) = deployer.run();
-        (, , weth, wbtc, ) = config.activeNetworkConfig();
+        (,, weth, wbtc,) = config.activeNetworkConfig();
         // targetContract(address(dscEngine));
         handler = new Handler(dscEngine, dsc);
         targetContract(address(handler));
     }
 
-    function invariant_protocolMustHaveEqualOrGreaterValueThanTotalSupply()
-        external
-        view
-    {
+    function invariant_protocolMustHaveEqualOrGreaterValueThanTotalSupply() external view {
         uint256 totalSupply = dsc.totalSupply();
         uint256 totalWethDeposited = IERC20(weth).balanceOf(address(dscEngine));
         uint256 totalWbtcDeposited = IERC20(wbtc).balanceOf(address(dscEngine));
-        uint256 wethValueInUsd = dscEngine.getUsdValue(
-            weth,
-            totalWethDeposited
-        );
-        uint256 wbtcValueInUsd = dscEngine.getUsdValue(
-            wbtc,
-            totalWbtcDeposited
-        );
+        uint256 wethValueInUsd = dscEngine.getUsdValue(weth, totalWethDeposited);
+        uint256 wbtcValueInUsd = dscEngine.getUsdValue(wbtc, totalWbtcDeposited);
 
         console.log("Mints: %s", handler.timesMintIsCalled());
-        assertGe(
-            wethValueInUsd + wbtcValueInUsd,
-            totalSupply,
-            "Total supply is more than the value of the collateral"
-        );
+        assertGe(wethValueInUsd + wbtcValueInUsd, totalSupply, "Total supply is more than the value of the collateral");
     }
 
     function invariant_gettersShouldNotRevert() external view {

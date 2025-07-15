@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.24;
+
 import {Test} from "forge-std/Test.sol";
 import {DeployBox} from "../../script/sec-six-upgradable/DeployBox.s.sol";
 import {UpgradeBox} from "../../script/sec-six-upgradable/UpgradeBox.s.sol";
@@ -30,11 +31,7 @@ contract DeployAndUpgradeTest is Test {
 
         upgrader.upgradeBox(proxy, address(boxV2));
         uint256 expectedValue = 2;
-        assertEq(
-            expectedValue,
-            BoxV2(proxy).version(),
-            "Expected version to be 2"
-        );
+        assertEq(expectedValue, BoxV2(proxy).version(), "Expected version to be 2");
 
         BoxV2(proxy).setNumber(7);
         assertEq(7, BoxV2(proxy).getNumber(), "Expected number to be 7");

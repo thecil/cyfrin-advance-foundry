@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.24;
+
 import {UUPSUpgradeable} from "@oz/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {Initializable} from "@oz/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@oz/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -30,7 +31,5 @@ contract BoxV2 is Initializable, UUPSUpgradeable, OwnableUpgradeable {
         return 2;
     }
 
-    function _authorizeUpgrade(
-        address newImplementation
-    ) internal override onlyOwner {}
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }
