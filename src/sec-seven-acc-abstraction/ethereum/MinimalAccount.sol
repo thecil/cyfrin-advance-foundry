@@ -17,6 +17,7 @@ contract MinimalAccount is IAccount, Ownable {
     error MinimalAccount__NotFromEntryPoint();
     error MinimalAccount__NotFromEntryPointOrOwner();
     error MinimalAccount__ExecutionCallFailed(bytes result);
+    error MinimalAccount__InsufficientAccountFunds(uint256 missingAmount);
     /*//////////////////////////////////////////////////////////////
                            STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
@@ -90,7 +91,9 @@ contract MinimalAccount is IAccount, Ownable {
     function _payPrefund(uint256 missingAccountFunds) internal {
         if (missingAccountFunds != 0) {
             (bool success,) = payable(msg.sender).call{value: missingAccountFunds, gas: type(uint256).max}("");
-            (success);
+            if (!success) {
+                revert MinimalAccount__InsufficientAccountFunds(missingAccountFunds);
+            }
         }
     }
 

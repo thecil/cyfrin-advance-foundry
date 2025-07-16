@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.24;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 import {MinimalAccount} from "src/sec-seven-acc-abstraction/ethereum/MinimalAccount.sol";
 import {DeployMinimal} from "script/sec-seven-acc-abstraction/DeployMinimal.s.sol";
 import {HelperConfig} from "script/sec-seven-acc-abstraction/HelperConfig.s.sol";
@@ -66,8 +66,9 @@ contract MinimalAccountTest is Test {
             abi.encodeWithSelector(ERC20Mock.mint.selector, address(minimalAccount), AMOUNT_TO_MINT);
         bytes memory executeCallData =
             abi.encodeWithSelector(MinimalAccount.execute.selector, dest, value, functionData);
-        PackedUserOperation memory packedUserOp =
-            sendPackedUserOp.generatedSignedUserOperation(executeCallData, helperConfig.getConfig());
+        PackedUserOperation memory packedUserOp = sendPackedUserOp.generatedSignedUserOperation(
+            executeCallData, helperConfig.getConfig(), address(minimalAccount)
+        );
 
         bytes32 userOperationHash = IEntryPoint(helperConfig.getConfig().entryPoint).getUserOpHash(packedUserOp);
 
@@ -76,5 +77,47 @@ contract MinimalAccountTest is Test {
         assertEq(actualSigner, minimalAccount.owner(), "Actual signer should be the owner");
     }
 
-    function test_validationUserOps() public {}
+    function test_validationUserOps() public {
+        assertEq(usdc.balanceOf(address(minimalAccount)), 0, "Owner should have no tokens initially");
+        address dest = address(usdc);
+        uint256 value = 0;
+        bytes memory functionData =
+            abi.encodeWithSelector(ERC20Mock.mint.selector, address(minimalAccount), AMOUNT_TO_MINT);
+        bytes memory executeCallData =
+            abi.encodeWithSelector(MinimalAccount.execute.selector, dest, value, functionData);
+        PackedUserOperation memory packedUserOp = sendPackedUserOp.generatedSignedUserOperation(
+            executeCallData, helperConfig.getConfig(), address(minimalAccount)
+        );
+
+        bytes32 userOperationHash = IEntryPoint(helperConfig.getConfig().entryPoint).getUserOpHash(packedUserOp);
+
+        uint256 missingAccountFunds = 1e18;
+        vm.startPrank(helperConfig.getConfig().entryPoint);
+
+        uint256 validationData = minimalAccount.validateUserOp(packedUserOp, userOperationHash, missingAccountFunds);
+
+        assertEq(validationData, 0);
+    }
+
+    function test_entryPointCanExecuteCommands() public {
+        assertEq(usdc.balanceOf(address(minimalAccount)), 0, "Owner should have no tokens initially");
+        address dest = address(usdc);
+        uint256 value = 0;
+        bytes memory functionData =
+            abi.encodeWithSelector(ERC20Mock.mint.selector, address(minimalAccount), AMOUNT_TO_MINT);
+        bytes memory executeCallData =
+            abi.encodeWithSelector(MinimalAccount.execute.selector, dest, value, functionData);
+        PackedUserOperation memory packedUserOp = sendPackedUserOp.generatedSignedUserOperation(
+            executeCallData, helperConfig.getConfig(), address(minimalAccount)
+        );
+
+        vm.deal(address(minimalAccount), 1e18);
+
+        PackedUserOperation[] memory ops = new PackedUserOperation[](1);
+        ops[0] = packedUserOp;
+        vm.startPrank(randomUser);
+        console.log("Nonce: %s", sendPackedUserOp.getDebugNonce());
+        IEntryPoint(helperConfig.getConfig().entryPoint).handleOps(ops, payable(randomUser));
+        assertEq(usdc.balanceOf(address(minimalAccount)), AMOUNT_TO_MINT, "Owner should have tokens after executing");
+    }
 }
