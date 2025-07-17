@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.24;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {MinimalAccount} from "src/sec-seven-acc-abstraction/ethereum/MinimalAccount.sol";
 import {DeployMinimal} from "script/sec-seven-acc-abstraction/DeployMinimal.s.sol";
 import {HelperConfig} from "script/sec-seven-acc-abstraction/HelperConfig.s.sol";
@@ -116,7 +116,6 @@ contract MinimalAccountTest is Test {
         PackedUserOperation[] memory ops = new PackedUserOperation[](1);
         ops[0] = packedUserOp;
         vm.startPrank(randomUser);
-        console.log("Nonce: %s", sendPackedUserOp.getDebugNonce());
         IEntryPoint(helperConfig.getConfig().entryPoint).handleOps(ops, payable(randomUser));
         assertEq(usdc.balanceOf(address(minimalAccount)), AMOUNT_TO_MINT, "Owner should have tokens after executing");
     }
