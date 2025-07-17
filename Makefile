@@ -60,3 +60,7 @@ make-merkle:
 # Deploy MerkleAirdrop
 deploy-merkle-airdrop:
 	@forge script script/sec-five-airdrop/DeployMerkleAirdrop.s.sol:DeployMerkleAirdropScript --rpc-url http://127.0.0.1:8545 --private-key $(DEFAULT_ANVIL_KEY) --broadcast
+
+# Deploy Minimal Account
+	@forge script script/sec-seven-acc-abstraction/DeployMinimal.s.sol:DeployMinimalAccount --rpc-url http://127.0.0.1:8545 --private-key $(DEFAULT_ANVIL_KEY) --broadcast
+
