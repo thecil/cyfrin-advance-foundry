@@ -25,6 +25,7 @@ contract RebaseTokenTest is Test {
 
     function addRewardsToVault(uint256 rewardAmount) public {
         (bool success,) = payable(address(vault)).call{value: rewardAmount}("");
+        (success);
     }
 
     function test_depositLinear(uint256 amount) public {
