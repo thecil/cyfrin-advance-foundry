@@ -7,6 +7,7 @@ contract CaughtWithStatefulFuzz {
     /*
      * @dev Should never return 0
      */
+
     function doMoreMathAgain(uint128 myNumber) public returns (uint256) {
         uint256 response = (uint256(myNumber) / 1) + myValue;
         storedValue = response;

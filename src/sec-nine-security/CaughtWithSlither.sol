@@ -11,7 +11,7 @@ contract CaughtWithSlither {
     function withdraw() external {
         uint256 balance = balances[msg.sender];
         require(balance > 0);
-        (bool success, ) = msg.sender.call{value: balance}("");
+        (bool success,) = msg.sender.call{value: balance}("");
         require(success, "Failed to send Ether");
         balances[msg.sender] = 0;
     }
